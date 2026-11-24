@@ -1,0 +1,4637 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Üretim Simülasyonu</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* Yüzeyler */
+  --bg-950: #1f2124;
+  --bg-900: #26292d;
+  --bg-850: #2d3136;
+  --bg-800: #353a40;
+  --bg-750: #3f454c;
+  /* Çizgiler */
+  --line: #454b53;
+  --line-strong: #575e67;
+  --line-soft: #363b41;
+  /* Metin */
+  --text-primary: #e6e7e8;
+  --text-secondary: #aeb2b7;
+  --text-muted: #868b92;
+  /* Vurgu ve durum */
+  --accent-blue: #2bb3ae;
+  --accent-teal: #2bb3ae;
+  --accent-emerald: #3fb97f;
+  --accent-amber: #e0a93b;
+  --accent-rose: #e4574f;
+  --accent-solid: #14807d;
+  /* Ölçek */
+  --radius-lg: 8px;
+  --radius-md: 6px;
+  --radius-sm: 4px;
+  --font-sans: 'IBM Plex Sans', 'Segoe UI', system-ui, -apple-system, sans-serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; scrollbar-width: thin; scrollbar-color: #4a5058 transparent; }
+html, body {
+  width: 100%;
+  height: 100%;
+  background: var(--bg-950);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  line-height: 1.45;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+  user-select: none;
+}
+button, input, select, textarea { font-family: inherit; }
+input, textarea, select { user-select: text; }
+
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #4a5058; border-radius: 999px; border: 2px solid transparent; background-clip: content-box; }
+::-webkit-scrollbar-thumb:hover { background: #575e67; background-clip: content-box; }
+
+:where(button, input, select, textarea):focus-visible {
+  outline: 2px solid var(--accent-blue);
+  outline-offset: 2px;
+}
+
+/* ==================== BUTTONS ==================== */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line);
+  background: var(--bg-800);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 12.5px;
+  font-weight: 500;
+  line-height: 1.25;
+  cursor: pointer;
+  transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
+  white-space: nowrap;
+}
+.btn:hover:not(:disabled) { background: var(--bg-750); border-color: var(--line-strong); }
+.btn:active:not(:disabled) { background: var(--bg-850); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-primary {
+  background: var(--accent-solid);
+  border-color: #26a39e;
+  color: #fff;
+}
+.btn-primary:hover:not(:disabled) { background: #1a948f; border-color: #3cc1bc; }
+.btn-primary:active:not(:disabled) { background: #0f6b68; }
+.btn-success {
+  background: rgba(63, 185, 127, 0.12);
+  border-color: rgba(63, 185, 127, 0.4);
+  color: #7bd3a4;
+}
+.btn-success:hover:not(:disabled) { background: rgba(63, 185, 127, 0.2); border-color: rgba(63, 185, 127, 0.55); }
+.btn-warning {
+  background: rgba(224, 169, 59, 0.12);
+  border-color: rgba(224, 169, 59, 0.4);
+  color: #ecc16a;
+}
+.btn-warning:hover:not(:disabled) { background: rgba(224, 169, 59, 0.2); border-color: rgba(224, 169, 59, 0.55); }
+.btn-danger {
+  background: rgba(228, 87, 79, 0.14);
+  border-color: rgba(228, 87, 79, 0.45);
+  color: #f0908a;
+}
+.btn-danger:hover:not(:disabled) { background: rgba(228, 87, 79, 0.22); border-color: rgba(228, 87, 79, 0.6); }
+.btn-sm { padding: 5px 9px; font-size: 12px; }
+
+/* ==================== STATUS TAGS ==================== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 2px 7px;
+  border-radius: var(--radius-sm);
+  font-size: 11px;
+  font-weight: 600;
+  font-family: var(--font-mono);
+  line-height: 1.5;
+  letter-spacing: 0;
+}
+.badge-ok   { background: rgba(63, 185, 127, 0.12); color: #7bd3a4; border: 1px solid rgba(63, 185, 127, 0.35); }
+.badge-warn { background: rgba(224, 169, 59, 0.12); color: #ecc16a; border: 1px solid rgba(224, 169, 59, 0.38); }
+.badge-crit { background: rgba(228, 87, 79, 0.14);  color: #f0908a; border: 1px solid rgba(228, 87, 79, 0.42); }
+.badge-info { background: rgba(43, 179, 174, 0.12); color: #8fd6d2; border: 1px solid rgba(43, 179, 174, 0.35); }
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  overflow: hidden;
+}
+.screen.active { display: flex; }
+
+/* ==================== MAIN MENU ==================== */
+#menu-screen {
+  background: var(--bg-950);
+  overflow-y: auto;
+  padding: 22px 28px 44px;
+}
+
+.menu-shell {
+  max-width: 1400px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.menu-topbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 14px 18px;
+  background: var(--bg-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+}
+
+.brand-group { display: flex; align-items: center; gap: 12px; }
+.brand-mark {
+  width: 36px; height: 36px;
+  border-radius: var(--radius-md);
+  background: var(--accent-solid);
+  display: grid; place-items: center;
+  font-family: var(--font-mono); font-weight: 700; font-size: 12px; color: #fff;
+  letter-spacing: 0.02em;
+}
+.brand-title { font-size: 15px; font-weight: 600; letter-spacing: -0.005em; }
+.brand-sub { font-size: 12px; color: var(--text-secondary); margin-top: 2px; }
+
+.menu-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+
+.menu-overview-strip {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+@media (max-width: 960px) {
+  .menu-overview-strip { grid-template-columns: repeat(2, 1fr); }
+}
+.menu-stat-box {
+  background: var(--bg-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 12px 16px;
+  min-width: 0;
+}
+.menu-stat-label { font-size: 12px; color: var(--text-secondary); }
+.menu-stat-val {
+  font-family: var(--font-mono);
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.setup-grid {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+@media (max-width: 1060px) {
+  .setup-grid { grid-template-columns: 1fr; }
+}
+
+.panel-card {
+  background: var(--bg-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 18px;
+}
+.panel-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 16px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--line-soft);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.form-group { margin-bottom: 14px; }
+.form-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+}
+.form-input, .form-select, .form-textarea {
+  width: 100%;
+  padding: 8px 10px;
+  background: var(--bg-950);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 13px;
+  transition: border-color 0.12s, box-shadow 0.12s;
+}
+.form-input::placeholder, .form-textarea::placeholder { color: var(--text-muted); }
+.form-input:hover, .form-select:hover, .form-textarea:hover { border-color: var(--line-strong); }
+.form-input:focus, .form-select:focus, .form-textarea:focus {
+  outline: none;
+  border-color: var(--accent-blue);
+  box-shadow: 0 0 0 3px rgba(43, 179, 174, 0.18);
+}
+.form-textarea { min-height: 76px; resize: vertical; line-height: 1.5; }
+
+.avatar-picker {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+.avatar-option {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px;
+  background: var(--bg-950);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: border-color 0.12s, background-color 0.12s;
+}
+.avatar-option:hover { border-color: var(--line-strong); background: var(--bg-850); }
+.avatar-option.selected {
+  border-color: var(--accent-blue);
+  background: rgba(43, 179, 174, 0.08);
+}
+.avatar-thumb {
+  width: 42px; height: 42px;
+  border-radius: var(--radius-md);
+  object-fit: contain;
+  background: var(--bg-800);
+  border: 1px solid var(--line);
+  flex-shrink: 0;
+  padding: 2px;
+}
+
+.id-card {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  background: var(--bg-950);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--accent-blue);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.id-card-avatar {
+  width: 56px; height: 56px;
+  border-radius: var(--radius-md);
+  object-fit: contain;
+  border: 1px solid var(--line-strong);
+  background: var(--bg-800);
+  flex-shrink: 0;
+  padding: 2px;
+}
+.id-card-meta { flex: 1; min-width: 0; }
+.id-card-org {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  letter-spacing: 0.01em;
+  color: var(--text-muted);
+}
+.id-card-name {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-top: 3px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.id-card-role { font-size: 12px; color: var(--text-secondary); margin-top: 1px; }
+.id-card-serial { font-family: var(--font-mono); font-size: 11px; color: var(--text-muted); margin-top: 5px; }
+
+.sector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 10px;
+}
+.sector-card {
+  background: var(--bg-950);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  cursor: pointer;
+  transition: border-color 0.12s, background-color 0.12s;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.sector-card:hover { border-color: var(--line-strong); background: var(--bg-850); }
+.sector-card.selected {
+  border-color: var(--accent-blue);
+  background: rgba(43, 179, 174, 0.07);
+  box-shadow: inset 3px 0 0 var(--accent-blue);
+}
+.sector-card-head { display: flex; align-items: center; gap: 10px; }
+.sector-logo-box {
+  width: 46px; height: 46px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-800);
+  border: 1px solid var(--line);
+  display: grid; place-items: center;
+  overflow: hidden;
+  flex-shrink: 0;
+  padding: 4px;
+}
+.sector-logo-box img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+}
+.sector-name { font-size: 13px; font-weight: 600; line-height: 1.25; }
+.sector-plant { font-size: 10.5px; color: var(--text-muted); font-family: var(--font-mono); margin-top: 2px; }
+.sector-lines {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  border-top: 1px solid var(--line-soft);
+  padding-top: 8px;
+}
+.sector-lines strong { color: var(--text-primary); font-weight: 500; }
+
+/* ==================== SIMULATION TOPBAR ==================== */
+#sim-screen { background: var(--bg-950); }
+.sim-topbar {
+  height: 52px;
+  background: var(--bg-900);
+  border-bottom: 1px solid var(--line);
+  padding: 0 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  z-index: 30;
+  flex-shrink: 0;
+}
+.sim-top-left, .sim-top-center, .sim-top-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sim-sector-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg-850);
+  border: 1px solid var(--line);
+  padding: 4px 10px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  font-weight: 600;
+}
+.sim-sector-badge img {
+  width: 24px; height: 20px;
+  object-fit: contain;
+}
+.clock-box {
+  font-family: var(--font-mono);
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--bg-950);
+  border: 1px solid var(--line);
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.speed-group {
+  display: inline-flex;
+  background: var(--bg-950);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  padding: 2px;
+  gap: 2px;
+}
+.speed-btn {
+  padding: 4px 9px;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: background-color 0.12s, color 0.12s;
+}
+.speed-btn:hover { color: var(--text-primary); background: var(--bg-800); }
+.speed-btn.active { background: var(--accent-blue); color: #0a1a20; }
+
+.sim-stage { position: relative; flex: 1; overflow: hidden; }
+
+/* ==================== DESKTOP + MES WORKSPACE ==================== */
+#scene-laptop {
+  position: absolute;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px 24px;
+  z-index: 20;
+}
+#scene-laptop.active { display: flex; }
+
+.laptop-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-900);
+  background-image: url("ofisarkaplan.jpg");
+  background-size: cover;
+  background-position: center;
+  filter: blur(5px) saturate(0.75) brightness(0.68);
+  transform: scale(1.04);
+}
+.laptop-backdrop-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(24, 27, 31, 0.35);
+}
+
+.laptop-frame {
+  position: relative;
+  z-index: 2;
+  width: min(1420px, 98vw);
+  height: min(860px, calc(100vh - 88px));
+  background: var(--bg-950);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: 0;
+  box-shadow: 0 22px 60px rgba(0, 0, 0, 0.55);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+.laptop-screen {
+  flex: 1;
+  background: var(--bg-950);
+  border: 0;
+  border-radius: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  grid-template-rows: 40px minmax(0, 1fr) 28px;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Sekme şeridi */
+.mes-os-bar {
+  grid-column: 1;
+  grid-row: 1;
+  height: 40px;
+  background: var(--bg-800);
+  border-bottom: 1px solid var(--line);
+  padding: 0 0 0 6px;
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  justify-content: space-between;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.mes-browser-tabs {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  gap: 0;
+  overflow-x: auto;
+  overflow-y: hidden;
+  min-width: 0;
+  scrollbar-width: none;
+}
+.mes-browser-tabs::-webkit-scrollbar { display: none; }
+.mes-tab-btn {
+  padding: 0 13px;
+  border: none;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: color 0.12s, background-color 0.12s, border-color 0.12s;
+}
+.mes-tab-btn:hover { color: var(--text-primary); background: var(--bg-850); }
+.mes-tab-btn.active {
+  background: var(--bg-950);
+  color: #fff;
+  border-bottom-color: var(--accent-blue);
+}
+.nav-foot {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 10px;
+}
+
+.mes-content-area {
+  grid-column: 1;
+  grid-row: 2;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.status-bar {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 0 14px;
+  background: var(--bg-800);
+  border-top: 1px solid var(--line);
+  font-size: 11.5px;
+  color: var(--text-secondary);
+}
+.sb-group { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.sb-state { padding: 1px 9px; border-radius: 3px; font-weight: 700; font-family: var(--font-mono); font-size: 11px; letter-spacing: 0.04em; }
+.sb-state.ok { background: rgba(63,185,127,.2); color: #7bd3a4; }
+.sb-state.warn { background: rgba(224,169,59,.2); color: #ecc16a; }
+.sb-state.crit { background: rgba(228,87,79,.25); color: #f0908a; }
+.sb-lines { display: flex; gap: 6px; }
+.sb-line { font-family: var(--font-mono); padding: 0 7px 0 6px; border-left: 3px solid var(--line-strong); }
+.sb-line.ok { border-color: var(--accent-emerald); }
+.sb-line.warn { border-color: var(--accent-amber); }
+.sb-line.crit { border-color: var(--accent-rose); }
+.sb-logo { width: 16px; height: 14px; object-fit: contain; }
+.sb-clock { color: var(--text-primary); font-weight: 600; }
+
+.shift-info { display: grid; gap: 1px; background: var(--line-soft); border: 1px solid var(--line); border-radius: var(--radius-md); overflow: hidden; }
+.shift-info > div { display: flex; justify-content: space-between; gap: 12px; padding: 10px 12px; background: var(--bg-950); }
+.shift-info span { color: var(--text-secondary); }
+.shift-info strong { font-weight: 600; font-size: 12px; text-align: right; }
+
+/* Üst bilgi şeridi */
+.mes-header-strip {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg-900);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--line-strong);
+  border-radius: var(--radius-md);
+}
+.mes-sector-logo-main {
+  width: 46px;
+  height: 38px;
+  border-radius: var(--radius-sm);
+  object-fit: contain;
+  border: 1px solid var(--line);
+  background: var(--bg-800);
+  padding: 4px;
+}
+
+/* Durum şeridi (alarm panosu): sol şerit durumu taşır */
+.mes-status-banner {
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent-emerald);
+  background: var(--bg-900);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+.mes-status-banner.crit {
+  border-color: rgba(228, 87, 79, 0.4);
+  border-left-color: var(--accent-rose);
+  background: rgba(228, 87, 79, 0.08);
+}
+.mes-status-banner.warn {
+  border-color: rgba(224, 169, 59, 0.4);
+  border-left-color: var(--accent-amber);
+  background: rgba(224, 169, 59, 0.07);
+}
+
+/* Göstergeler */
+.mes-kpi-row {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 10px;
+}
+@media (max-width: 1080px) {
+  .mes-kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+.mes-kpi-card {
+  background: var(--bg-900);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  padding: 10px 13px;
+}
+.mes-kpi-label { font-size: 11.5px; color: var(--text-secondary); }
+.mes-kpi-val { font-family: var(--font-mono); font-size: 18px; font-weight: 600; margin-top: 3px; letter-spacing: 0; }
+
+.charts-two-col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+@media (max-width: 960px) {
+  .charts-two-col { grid-template-columns: 1fr; }
+}
+
+.chart-box {
+  background: var(--bg-900);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.chart-canvas {
+  width: 100%;
+  height: 150px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-950);
+  border: 1px solid var(--line-soft);
+}
+
+.line-detail-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+@media (max-width: 1024px) {
+  .line-detail-grid { grid-template-columns: 1fr; }
+}
+.line-panel {
+  background: var(--bg-900);
+  border: 1px solid var(--line);
+  border-top: 2px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  padding: 13px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.telemetry-mini-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px 6px;
+  font-size: 11px;
+  background: var(--bg-950);
+  padding: 9px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--line-soft);
+}
+.telemetry-cell span { display: block; color: var(--text-muted); font-size: 10.5px; }
+.telemetry-cell strong { font-family: var(--font-mono); font-weight: 500; color: var(--text-primary); font-size: 11.5px; margin-top: 1px; display: block; }
+
+.param-chip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(175px, 1fr));
+  gap: 8px;
+  margin-top: 8px;
+}
+.param-chip {
+  background: var(--bg-950);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  font-size: 12px;
+}
+.param-chip span { display: block; color: var(--text-muted); font-size: 11px; }
+.param-chip strong { font-family: var(--font-mono); font-weight: 500; color: var(--text-primary); margin-top: 2px; display: block; }
+
+.chat-feed {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 10px;
+  background: var(--bg-950);
+  border: 1px solid var(--line-soft);
+  border-radius: var(--radius-sm);
+}
+.chat-msg {
+  padding: 8px 11px;
+  border-radius: var(--radius-sm);
+  font-size: 12px;
+  line-height: 1.5;
+  border: 1px solid var(--line-soft);
+  background: var(--bg-900);
+}
+.chat-msg.user {
+  background: rgba(43, 179, 174, 0.1);
+  border-color: rgba(43, 179, 174, 0.32);
+}
+.chat-msg.staff {
+  background: var(--bg-900);
+  border-color: var(--line);
+}
+
+/* ==================== FACTORY FLOOR ==================== */
+#scene-floor {
+  position: absolute;
+  inset: 0;
+  display: none;
+  flex-direction: column;
+  background-color: var(--bg-950);
+  background-size: cover;
+  background-position: center;
+  overflow-y: auto;
+  padding: 18px 24px 32px;
+  z-index: 20;
+}
+#scene-floor.active { display: flex; }
+
+.floor-bg-tint {
+  position: fixed;
+  inset: 52px 0 0 0;
+  background: linear-gradient(180deg, rgba(31, 33, 36, 0.7), rgba(31, 33, 36, 0.88));
+  pointer-events: none;
+  z-index: 0;
+}
+.floor-container {
+  position: relative;
+  z-index: 1;
+  max-width: 1180px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.floor-top-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  background: var(--bg-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  padding: 10px 14px;
+}
+
+.floor-main-grid {
+  display: grid;
+  grid-template-columns: 360px 1fr;
+  gap: 14px;
+  align-items: start;
+}
+@media (max-width: 960px) {
+  .floor-main-grid { grid-template-columns: 1fr; }
+}
+
+.fault-visual-card {
+  background: var(--bg-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.fault-img-frame {
+  width: 100%;
+  height: 190px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--bg-950);
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px;
+}
+.fault-img-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.minigame-card {
+  background: var(--bg-900);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  min-height: 360px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.gauge-track {
+  position: relative;
+  height: 44px;
+  background: var(--bg-950);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  margin: 14px 0;
+}
+.gauge-safe-zone {
+  position: absolute;
+  top: 0; bottom: 0;
+  left: 38%; width: 24%;
+  background: rgba(63, 185, 127, 0.18);
+  border-left: 2px solid var(--accent-emerald);
+  border-right: 2px solid var(--accent-emerald);
+}
+.gauge-needle {
+  position: absolute;
+  top: 2px; bottom: 2px;
+  width: 6px;
+  border-radius: 3px;
+  background: var(--accent-blue);
+  box-shadow: 0 0 0 1px rgba(10, 26, 32, 0.6);
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+#sensor-canvas {
+  width: 100%;
+  height: 210px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--line);
+  background: var(--bg-950);
+  cursor: crosshair;
+  touch-action: none;
+}
+
+.conveyor-lane {
+  position: relative;
+  height: 180px;
+  background: repeating-linear-gradient(
+    90deg,
+    #26292d 0px,
+    #26292d 36px,
+    #2d3136 36px,
+    #2d3136 40px
+  );
+  border-top: 4px solid var(--line-strong);
+  border-bottom: 4px solid var(--line-strong);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.conveyor-item {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 96px;
+  height: 70px;
+  border-radius: var(--radius-md);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  padding: 4px;
+  text-align: center;
+}
+.item-defect {
+  background: rgba(228, 87, 79, 0.2);
+  border: 2px solid var(--accent-rose);
+  color: #ffe0de;
+}
+.item-ok {
+  background: rgba(63, 185, 127, 0.14);
+  border: 1.5px solid var(--accent-emerald);
+  color: #d4f3e2;
+}
+
+/* ==================== MEETING ROOM ==================== */
+#meeting-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+#meeting-overlay.active { display: flex; }
+.meeting-bg {
+  position: absolute;
+  inset: 0;
+  background-color: var(--bg-900);
+  background-size: cover;
+  background-position: center;
+  filter: brightness(0.5);
+}
+.meeting-bg-fallback {
+  position: absolute;
+  inset: 0;
+  background: rgba(31, 33, 36, 0.78);
+}
+.meeting-box {
+  position: relative;
+  z-index: 2;
+  max-width: 780px;
+  width: 100%;
+  background: var(--bg-900);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+/* ==================== RADIO DRAWER ==================== */
+.radio-dock {
+  position: fixed;
+  right: 22px;
+  bottom: 44px;
+  z-index: 45;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+.radio-toggle-btn {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-850);
+  border: 1px solid var(--line-strong);
+  color: var(--text-primary);
+  font-weight: 500;
+  font-size: 12.5px;
+  cursor: pointer;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.12s, border-color 0.12s;
+}
+.radio-toggle-btn:hover { background: var(--bg-800); border-color: var(--accent-blue); }
+.radio-count-badge {
+  background: var(--accent-rose);
+  color: #fff;
+  font-family: var(--font-mono);
+  font-size: 11px;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+  padding: 1px 6px;
+  border-radius: 3px;
+}
+.radio-count-badge.empty { display: none; }
+
+.radio-drawer {
+  width: 390px;
+  max-width: calc(100vw - 36px);
+  background: var(--bg-850);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  transform: translateY(12px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.18s ease, transform 0.18s ease;
+  display: none;
+}
+.radio-drawer.open {
+  display: block;
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
+}
+.radio-head {
+  padding: 10px 14px;
+  background: var(--bg-800);
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.radio-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  max-height: 440px;
+  overflow-y: auto;
+}
+
+/* ==================== MODALS ==================== */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 10, 13, 0.7);
+  backdrop-filter: blur(3px);
+  z-index: 70;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+}
+.modal-backdrop.open { display: flex; }
+.modal-card {
+  width: min(680px, 96vw);
+  max-height: 88vh;
+  overflow-y: auto;
+  background: var(--bg-900);
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius-lg);
+  padding: 22px;
+  box-shadow: 0 24px 64px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Kaizen formu: kâğıt form görünümü için açık tema */
+.modal-card.kaizen-light {
+  background: #f4f5f7;
+  color: #1a1f27;
+  border: 1px solid #c4cad3;
+}
+.modal-card.kaizen-light .text-muted,
+.modal-card.kaizen-light .form-label { color: #4d5766; }
+.modal-card.kaizen-light .form-input,
+.modal-card.kaizen-light .form-textarea {
+  background: #ffffff;
+  color: #1a1f27;
+  border-color: #c4cad3;
+}
+.modal-card.kaizen-light .form-input::placeholder,
+.modal-card.kaizen-light .form-textarea::placeholder { color: #8a93a1; }
+.modal-card.kaizen-light .form-input:hover,
+.modal-card.kaizen-light .form-textarea:hover { border-color: #9aa3b0; }
+.modal-card.kaizen-light .form-input:focus,
+.modal-card.kaizen-light .form-textarea:focus {
+  border-color: #14807d;
+  box-shadow: 0 0 0 3px rgba(37, 114, 142, 0.18);
+}
+.modal-card.kaizen-light .modal-header { border-bottom-color: #d8dce3; }
+.modal-card.kaizen-light .kaizen-item-card {
+  background: #ffffff;
+  border: 1px solid #d8dce3;
+  color: #1a1f27;
+}
+.modal-card.kaizen-light .btn:not(.btn-primary) {
+  background: #ffffff;
+  border-color: #c4cad3;
+  color: #1a1f27;
+}
+.modal-card.kaizen-light .btn:not(.btn-primary):hover:not(:disabled) {
+  background: #eceef2;
+  border-color: #aeb5c0;
+}
+.modal-card.kaizen-light .badge-warn {
+  background: #fbf1d8;
+  color: #6e4a00;
+  border-color: #e3c987;
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 12px;
+}
+
+.choice-list { display: flex; flex-direction: column; gap: 8px; }
+.choice-btn {
+  text-align: left;
+  padding: 10px 13px;
+  background: var(--bg-950);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-size: 13px;
+  line-height: 1.45;
+  cursor: pointer;
+  transition: border-color 0.12s, background-color 0.12s;
+}
+.choice-btn:hover {
+  border-color: var(--accent-blue);
+  background: rgba(43, 179, 174, 0.07);
+}
+
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+.data-table th, .data-table td {
+  padding: 8px 10px;
+  border-bottom: 1px solid var(--line-soft);
+  text-align: left;
+}
+.data-table th {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  background: var(--bg-800);
+  border-bottom-color: var(--line);
+  white-space: nowrap;
+}
+.data-table tbody tr:last-child td { border-bottom: none; }
+.data-table tbody tr:hover td { background: rgba(255, 255, 255, 0.02); }
+.mono { font-family: var(--font-mono); }
+.text-muted { color: var(--text-secondary); font-size: 12px; }
+
+.sim-topbar { background: var(--bg-800); border-bottom: 1px solid var(--line); }
+.panel-title { background: var(--bg-800); margin: -18px -18px 16px; padding: 9px 18px; border-bottom: 1px solid var(--line); }
+.btn { background: var(--bg-750); border-color: var(--line-strong); }
+.btn:hover:not(:disabled) { background: #4a5058; }
+.btn-primary { background: #14807d; border-color: #26a39e; }
+.badge { border-radius: 2px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; }
+}
+</style>
+</head>
+<body>
+
+<!-- ==================== 1. MAIN MENU ==================== -->
+<div id="menu-screen" class="screen active">
+  <div class="menu-shell">
+    <div class="menu-topbar">
+      <div class="brand-group">
+        <div class="brand-mark">MES</div>
+        <div>
+          <div class="brand-title">Üretim Simülasyonu</div>
+        </div>
+      </div>
+      <div class="menu-actions">
+        <button id="btn-continue-career" class="btn btn-success" style="display:none;">
+          Kayıttan Devam Et
+        </button>
+        <button id="btn-open-kaizen" class="btn btn-warning">
+          Kaizen Öneri Formu
+        </button>
+        <button id="btn-reset-save" class="btn btn-sm">
+          Kaydı Sıfırla
+        </button>
+      </div>
+    </div>
+
+    <div class="menu-overview-strip">
+      <div class="menu-stat-box">
+        <div class="menu-stat-label">Kayıtlı Vardiya Günü</div>
+        <div id="menu-stat-day" class="menu-stat-val">GÜN 1</div>
+      </div>
+      <div class="menu-stat-box">
+        <div class="menu-stat-label">Seçili Tesis Sektörü</div>
+        <div id="menu-stat-sector" class="menu-stat-val">İçecek & Gıda Dolum</div>
+      </div>
+      <div class="menu-stat-box">
+        <div class="menu-stat-label">Tamamlanan 8D Kaydı</div>
+        <div id="menu-stat-8d" class="menu-stat-val">0</div>
+      </div>
+      <div class="menu-stat-box">
+        <div class="menu-stat-label">Kayıtlı Kaizen Önerisi</div>
+        <div id="menu-stat-kaizen" class="menu-stat-val">0</div>
+      </div>
+    </div>
+
+    <div class="setup-grid">
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Operatör ve Vardiya</span>
+          <span class="badge badge-info" id="menu-day-badge">GÜN 1</span>
+        </div>
+        <div class="form-group">
+          <label class="form-label" for="input-op-name">Personel Adı Soyadı</label>
+          <input id="input-op-name" class="form-input" type="text" maxlength="45" placeholder="Adınızı ve soyadınızı girin">
+        </div>
+        <div class="shift-info">
+          <div><span>Vardiya</span><strong class="mono">08:00–16:00</strong></div>
+          <div><span>Sicil</span><strong id="menu-sicil" class="mono">MES-2026-014</strong></div>
+          <div><span>Tesis</span><strong id="menu-plant" class="mono">-</strong></div>
+          <div><span>Aktif hat</span><strong class="mono">3 hat</strong></div>
+        </div>
+        <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px;">
+          <div style="display:flex; justify-content:space-between; font-size:12px; color:var(--text-secondary);">
+            <span>Seçili Tesis Sektörü:</span>
+            <strong id="selected-sector-label" style="color:var(--accent-teal);">İçecek & Gıda Dolum</strong>
+          </div>
+          <button id="btn-start-shift" class="btn btn-primary" style="width:100%; padding:12px; font-size:14px;">
+            Vardiyayı Başlat
+          </button>
+        </div>
+      </div>
+
+      <div class="panel-card">
+        <div class="panel-title">
+          <span>Üretim Sektörü Seçimi (12 Tesis · Her Tesiste 3 Aktif Hat)</span>
+          <span class="text-muted">Doğrudan seçim yapabilirsiniz</span>
+        </div>
+        <div id="sector-grid" class="sector-grid"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== 2. DIRECT DESKTOP + MES WORKSPACE ==================== -->
+<div id="sim-screen" class="screen">
+  <header class="sim-topbar">
+    <div class="sim-top-left">
+      <button id="btn-back-menu" class="btn btn-sm">Ana Menü</button>
+      <div class="sim-sector-badge">
+        <img id="top-sector-logo" alt="Sektör Logosu">
+        <span id="top-sector-name">İçecek & Gıda Dolum</span>
+      </div>
+      <span class="badge badge-info" id="top-day-label">GÜN 1</span>
+    </div>
+
+    <div class="sim-top-center">
+      <div class="clock-box">
+        <span id="sim-clock">08:00</span>
+        <span style="color:var(--text-muted);font-weight:500;">/ 16:00</span>
+      </div>
+      <div class="speed-group">
+        <button class="speed-btn" data-speed="0">||</button>
+        <button class="speed-btn active" data-speed="1">1x</button>
+        <button class="speed-btn" data-speed="2">2x</button>
+      </div>
+    </div>
+
+    <div class="sim-top-right">
+      <span class="text-muted" id="top-operator-name" style="font-weight:600;color:var(--text-primary);"></span>
+      <button id="btn-end-day-early" class="btn btn-sm btn-warning">Vardiyayı Bitir & Raporla</button>
+    </div>
+  </header>
+
+  <div class="sim-stage">
+    <!-- DESKTOP + MES -->
+    <section id="scene-laptop" class="active">
+      <div id="laptop-bg-photo" class="laptop-backdrop"></div>
+      <div class="laptop-backdrop-overlay"></div>
+
+      <div class="laptop-frame">
+        <div class="laptop-screen">
+          <div class="mes-os-bar">
+            <div class="mes-browser-tabs">
+              <button class="mes-tab-btn active" data-tab="live">Canlı Hat & OEE</button>
+              <button class="mes-tab-btn" data-tab="orders">İş Emirleri & İstasyon</button>
+              <button class="mes-tab-btn" data-tab="crew">Ekip & Amir İletişimi</button>
+              <button class="mes-tab-btn" data-tab="downtime">Duruş & Sapma</button>
+              <button class="mes-tab-btn" data-tab="maintenance">Bakım</button>
+              <button class="mes-tab-btn" data-tab="energy">Enerji Grafikleri</button>
+              <button class="mes-tab-btn" data-tab="quality">Reçete & Kalite</button>
+              <button class="mes-tab-btn" data-tab="dispatch">Birim Yönlendirme</button>
+              <button class="mes-tab-btn" data-tab="shiftnotes">Devir & Kayıtlar</button>
+            </div>
+            <div class="nav-foot">
+              <button id="btn-open-floor-top" class="btn btn-sm btn-warning" onclick="switchScene('floor')">Saha Görevleri</button>
+            </div>
+          </div>
+
+          <div id="mes-tab-content" class="mes-content-area"></div>
+
+          <footer class="status-bar">
+            <div class="sb-group"><span id="sb-state" class="sb-state ok">STABİL</span><span id="sb-lines" class="sb-lines"></span></div>
+            <div class="sb-group mono"><span id="sb-oee">OEE %--</span><span id="sb-kw">-- kW</span></div>
+            <div class="sb-group">
+              <img id="mes-footer-logo" class="sb-logo" alt="">
+              <span id="mes-footer-sector-name"></span>
+              <span class="mono">SCADA BAĞLI</span>
+              <span id="win-tray-clock" class="mono sb-clock">08:00</span>
+            </div>
+          </footer>
+        </div>
+      </div>
+    </section>
+
+    <!-- FACTORY FLOOR -->
+    <section id="scene-floor">
+      <div class="floor-bg-tint"></div>
+      <div class="floor-container">
+        <div class="floor-top-bar">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <strong id="floor-line-title" style="font-size:15px;">HAT-01 · Saha Müdahale Paneli</strong>
+            <span id="floor-status-badge" class="badge badge-ok">NORMAL ÇALIŞMA</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;" id="floor-line-switcher"></div>
+          <button id="btn-back-desk-floor" class="btn btn-sm btn-primary">MES Masaüstüne Dön</button>
+        </div>
+
+        <div class="floor-main-grid">
+          <div class="fault-visual-card">
+            <div class="fault-img-frame">
+              <img id="floor-fault-img" alt="Sektör Logosu">
+            </div>
+            <div>
+              <div id="floor-fault-title" style="font-size:15px;font-weight:700;">Hat Stabil</div>
+              <p id="floor-fault-desc" class="text-muted" style="margin-top:6px;line-height:1.45;"></p>
+            </div>
+            <div id="floor-operator-note" style="display:none;padding:10px 12px;border-radius:8px;background:rgba(43,179,174,0.08);border:1px solid rgba(43,179,174,0.28);font-size:12px;line-height:1.45;"></div>
+          </div>
+
+          <div id="floor-minigame-host" class="minigame-card"></div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- RADIO DRAWER -->
+  <div class="radio-dock">
+    <div id="radio-drawer" class="radio-drawer">
+      <div class="radio-head">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span class="badge badge-info">SAHA TELSİZİ</span>
+          <strong id="radio-msg-code" class="mono" style="font-size:12px;"></strong>
+        </div>
+        <button id="btn-close-radio" class="btn btn-sm" style="padding:3px 8px;">Kapat</button>
+      </div>
+      <div id="radio-body" class="radio-body"></div>
+    </div>
+
+    <button id="radio-toggle-btn" class="radio-toggle-btn">
+      <span>Saha Telsizi</span>
+      <span id="radio-count-badge" class="radio-count-badge empty">0</span>
+    </button>
+  </div>
+</div>
+
+<!-- MANDATORY MEETING ROOM -->
+<div id="meeting-overlay">
+  <div id="meeting-bg-photo" class="meeting-bg"></div>
+  <div class="meeting-bg-fallback"></div>
+  <div class="meeting-box">
+    <div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--line);padding-bottom:12px;">
+      <div>
+        <span class="badge badge-crit" id="meeting-mode-badge">ZORUNLU TOPLANTI ÇAĞRISI</span>
+        <h3 style="margin-top:6px;font-size:17px;" id="meeting-title-text">Amir & Koordinasyon Toplantısı</h3>
+      </div>
+      <button id="btn-close-meeting" class="btn btn-sm" disabled title=>Gündemi Tamamla</button>
+    </div>
+    <div id="meeting-content" style="display:flex;flex-direction:column;gap:14px;"></div>
+  </div>
+</div>
+
+<!-- KAIZEN PROPOSAL FORM MODAL -->
+<div id="kaizen-modal" class="modal-backdrop">
+  <div class="modal-card kaizen-light">
+    <div class="modal-header">
+      <div>
+        <span class="badge badge-warn">KAIZEN ÖNERİ FORMU</span>
+        <h3 style="margin-top:5px;font-size:17px;color:#1a1f27;">Kaizen Raporu (kaizen.xlsx)</h3>
+      </div>
+      <button id="btn-close-kaizen" class="btn btn-sm">Kapat</button>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="kz-title">İyileştirme Başlığı</label>
+      <input id="kz-title" class="form-input" type="text" placeholder="Örn: Hat duruş ve reçete takip iyileştirmesi">
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="kz-current">Mevcut Durum</label>
+      <textarea id="kz-current" class="form-textarea" placeholder="Mevcut durum"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="kz-proposal">Önerilen İyileştirme</label>
+      <textarea id="kz-proposal" class="form-textarea" placeholder="Önerilen iyileştirme"></textarea>
+    </div>
+    <div class="form-group">
+      <label class="form-label" for="kz-impact">Beklenen Etki</label>
+      <input id="kz-impact" class="form-input" type="text" placeholder="Beklenen etki">
+    </div>
+
+    <div style="display:flex;flex-wrap:wrap;gap:10px;justify-content:flex-end;">
+      <button id="btn-save-kaizen" class="btn btn-primary">Kaydet & kaizen.xlsx Aç</button>
+    </div>
+
+    <div id="kaizen-saved-list" style="border-top:1px solid #e2e8f0;padding-top:12px;"></div>
+  </div>
+</div>
+
+<!-- 8D MODAL -->
+<div id="eightd-modal" class="modal-backdrop">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <span class="badge badge-info">8D KÖK NEDEN RAPORU</span>
+        <h3 id="d8-modal-title" style="margin-top:5px;font-size:16px;">Kök Neden Analizi</h3>
+      </div>
+      <button id="btn-close-8d" class="btn btn-sm">Kapat</button>
+    </div>
+    <div id="d8-modal-body" style="display:flex;flex-direction:column;gap:12px;"></div>
+  </div>
+</div>
+
+<!-- SHIFT SUMMARY MODAL -->
+<div id="shift-modal" class="modal-backdrop">
+  <div class="modal-card">
+    <div class="modal-header">
+      <div>
+        <span class="badge badge-ok">VARDİYA DEVİR TESLİM RAPORU</span>
+        <h3 id="shift-modal-title" style="margin-top:5px;font-size:17px;">Gün Sonu Performans Özeti</h3>
+      </div>
+      <button id="btn-close-shift" class="btn btn-sm">Kapat</button>
+    </div>
+    <div id="shift-modal-body" style="display:flex;flex-direction:column;gap:14px;"></div>
+  </div>
+</div>
+
+<script>
+const GAME_ASSETS = {
+  ofis_masasi: "ofis_masasi.jpg",
+  laptop_arka_plan: "ofisarkaplan.jpg",
+  toplanti_odasi: "toplantiodasıarkaplan.jpg",
+  saha_genel: "saha_genel.jpg",
+
+  avatar_erkek: "avatar_erkek.png",
+  avatar_kadin: "avatar_kadin.png",
+
+  logo_icecek: "icecek.png",
+  logo_plastik: "plastikenjeksiyon.png",
+  logo_otomotiv: "otoyansanayi.png",
+  logo_ilac: "ilac.png",
+  logo_metal: "metal.png",
+  logo_tekstil: "tekstil.png",
+  logo_elektronik: "elektronik.png",
+  logo_kimya: "boyakimya.png",
+  logo_kagit: "kagit.png",
+  logo_cam: "cam.png",
+  logo_beyazesya: "beyazesya.png",
+  logo_enerji: "batarya.png"
+};
+
+function getSectorFloorImage(sector) {
+  const logoFile = GAME_ASSETS[sector.logoKey] || `${sector.id}.png`;
+  const baseName = logoFile.replace(/\.[^/.]+$/, "").replace(/\s+/g, "").toLowerCase();
+  return `${baseName}saha.jpg`;
+}
+
+function makeAvatarSvg(gender) {
+  const hairColor = gender === "female" ? "#7c2d12" : "#1e293b";
+  const shirtColor = gender === "female" ? "#2c7a93" : "#334155";
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">
+    <rect width="120" height="120" fill="#2d3136"/>
+    <circle cx="60" cy="44" r="21" fill="#e5b99e"/>
+    ${gender === "female"
+      ? `<path d="M36 44c0-15 11-25 24-25s24 10 24 25v24H75V45c0-8-6-13-15-13s-15 5-15 13v23H36V44z" fill="${hairColor}"/>`
+      : `<path d="M39 40c2-13 10-20 21-20s19 7 21 20c-6-5-14-7-21-7s-15 2-21 7z" fill="${hairColor}"/>`
+    }
+    <path d="M24 114c4-22 18-33 36-33s32 11 36 33" fill="${shirtColor}"/>
+    <rect x="49" y="83" width="22" height="12" rx="3" fill="#1f2124" stroke="#2bb3ae" stroke-width="1.2"/>
+  </svg>`;
+  return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+}
+
+function makeSectorSvg(shortCode, accent = "#2bb3ae") {
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96">
+    <rect width="96" height="96" rx="16" fill="#26292d"/>
+    <rect x="8" y="8" width="80" height="80" rx="12" fill="none" stroke="${accent}" stroke-width="2.5" stroke-opacity="0.65"/>
+    <text x="48" y="54" text-anchor="middle" fill="#e6e7e8" font-family="monospace" font-size="22" font-weight="bold">${shortCode}</text>
+  </svg>`;
+  return "data:image/svg+xml;charset=UTF-8," + encodeURIComponent(svg);
+}
+
+function bindImageWithFallback(imgEl, src, fallbackDataUrl) {
+  if (!imgEl) return;
+  if (!src) {
+    imgEl.src = fallbackDataUrl;
+    return;
+  }
+  imgEl.onerror = function () {
+    this.onerror = null;
+    this.src = fallbackDataUrl;
+  };
+  imgEl.src = src;
+}
+
+function applyBackgroundImageWithFallback(el, imagePath, fallbackPath = null) {
+  if (!el) return;
+  const tryLoad = (path, nextFallback) => {
+    if (!path) {
+      el.style.backgroundImage = "none";
+      return;
+    }
+    const tester = new Image();
+    tester.onload = () => {
+      el.style.backgroundImage = `url("${path}")`;
+    };
+    tester.onerror = () => {
+      if (nextFallback) tryLoad(nextFallback, null);
+      else el.style.backgroundImage = "none";
+    };
+    tester.src = path;
+  };
+  tryLoad(imagePath, fallbackPath);
+}
+
+const SECTORS = [
+  {
+    id: "icecek",
+    name: "İçecek & Gıda Dolum",
+    plantCode: "TESİS-A01 · DOLUM KOMPLEKSİ",
+    logoKey: "logo_icecek",
+    shortCode: "GIDA",
+    accent: "#2bb3ae",
+    unit: "şişe",
+    supervisor: "Selim Demir (Üretim Amiri)",
+    lines: [
+      { id: "HAT-01", name: "PET Şişirme Hattı", machine: "BlowMolder K-100", operator: "Mert Yılmaz", station: "İST-01A · Preform Isıtma & Kalıp", oee: 90, rate: 4, kw: 38.4, health: 92, temp: "118.5 °C", pressure: "28.4 bar", vib: "1.8 mm/s", rpm: "1420 RPM", cycleSec: "1.4s", pdmRisk: "Düşük (%11)", barcode: "BC-PET-500-01" },
+      { id: "HAT-02", name: "Dolum & Kapaklama", machine: "FillerPro F-240", operator: "Zeynep Arslan", station: "İST-02B · Volumetrik Nozul & Tork", oee: 88, rate: 4, kw: 26.8, health: 86, temp: "19.2 °C", pressure: "4.2 bar", vib: "2.6 mm/s", rpm: "1180 RPM", cycleSec: "1.6s", pdmRisk: "Orta (%28)", barcode: "BC-FIL-240-02" },
+      { id: "HAT-03", name: "Etiket, SKT & Shrink", machine: "LabelJet L-80", operator: "Kaan Çelik", station: "İST-03C · Rulman Gergi & Lazer SKT", oee: 87, rate: 3, kw: 21.5, health: 81, temp: "162.0 °C", pressure: "3.1 bar", vib: "3.4 mm/s", rpm: "960 RPM", cycleSec: "1.9s", pdmRisk: "Yüksek (%44)", barcode: "BC-LBL-080-03" }
+    ],
+    orders: [
+      {
+        code: "WO-1041", product: "500 ml Kaynak Suyu", lot: "LOT-2611-A1", barcode: "869000104101", target: 4200, lineId: "HAT-02", station: "İST-02B · Dolum & Tork", assignedOp: "Zeynep Arslan", cycleTime: "1.6 sn/şişe",
+        params: [
+          { k: "Dolum Gramajı", v: "500.0 g (±1.5 g)" },
+          { k: "Kapak Tork", v: "1.80 Nm (±0.15 Nm)" },
+          { k: "Hat Basıncı", v: "4.2 bar" },
+          { k: "SKT Kontrast", v: "≥ %85" }
+        ]
+      },
+      {
+        code: "WO-1042", product: "330 ml Gazlı Meyve İçeceği", lot: "LOT-2611-A2", barcode: "869000104202", target: 3500, lineId: "HAT-03", station: "İST-03C · Etiket & Shrink", assignedOp: "Kaan Çelik", cycleTime: "1.9 sn/şişe",
+        params: [
+          { k: "Dolum Hacmi", v: "330.0 ml (±2.0 ml)" },
+          { k: "CO2 Seviyesi", v: "3.4 vol" },
+          { k: "Shrink Tünel Isısı", v: "162.0 °C" },
+          { k: "Etiket Eğimi", v: "≤ 1.0 mm" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "icecek_lot",
+        lineId: "HAT-02",
+        title: "Yeni Kapak Lotu & Barkod Doğrulama",
+        code: "MES-L02",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Kalite Güvence & 8D",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-02: Yeni kapak lot barkodu okutuldu; MES üzerinden lot/reçete teyidi bekleniyor.",
+        rootCause: "Lot geçişinde MES doğrulama adımının tamamlanmaması",
+        d8Options: [
+          "Lot barkodu MES üzerinde doğrulandı ve tork parametresi sabitlendi",
+          "Barkod doğrulama kontrolü kapatıldı",
+          "Kapaklama tork değeri sıfırlandı"
+        ]
+      },
+      {
+        id: "icecek_etiket",
+        lineId: "HAT-03",
+        title: "Saha Görevi: Etiket Eğriliği & Hatalı Şişe Ayıklama",
+        code: "SAHA-E03",
+        category: "Saha Görevi / Kalite",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-03): Etiket rulmanında sapma tespit edildi; sahaya inip hatalı şişeleri ayıklayın.",
+        rootCause: "Etiket besleme rulman boşluğu ve gergi kayması",
+        d8Options: [
+          "Sahada hatalı şişeler ayrıldı, etiket gergisi sabitlendi ve kontrol listesi güncellendi",
+          "SKT yazıcı kapatıldı",
+          "Dolum basıncı düşürüldü"
+        ]
+      }
+    ]
+  },
+  {
+    id: "tekstil",
+    name: "Tekstil & Teknik Dokuma",
+    plantCode: "TESİS-F06 · DOKUMA & TERBİYE",
+    logoKey: "logo_tekstil",
+    shortCode: "TEKS",
+    accent: "#2bb3ae",
+    unit: "metre",
+    supervisor: "Hakan Şahin (Dokuma Amiri)",
+    lines: [
+      { id: "HAT-01", name: "Çözgü & Haşıl Hattı", machine: "WarpSize WS-140", operator: "Elif Kaya", station: "İST-01A · Haşıl Teknesi & Kurutma", oee: 89, rate: 4, kw: 34.2, health: 90, temp: "112.0 °C", pressure: "4.4 bar", vib: "1.9 mm/s", rpm: "840 RPM", cycleSec: "1.5s", pdmRisk: "Düşük (%14)", barcode: "BC-WRP-140-01" },
+      { id: "HAT-02", name: "Hava Jetli Dokuma", machine: "AirJet Loom AJ-300", operator: "Emre Aydın", station: "İST-02B · Atkı Nozulu & Kafa", oee: 87, rate: 3, kw: 42.6, health: 84, temp: "24.5 °C", pressure: "6.4 bar", vib: "3.1 mm/s", rpm: "920 RPM", cycleSec: "1.8s", pdmRisk: "Orta (%32)", barcode: "BC-LOM-300-02" },
+      { id: "HAT-03", name: "Boyama, Ram & Kalite Kontrol", machine: "DyeStenter DS-95", operator: "Deniz Koç", station: "İST-03C · Ram Fikse & Optik Kam", oee: 88, rate: 3, kw: 46.0, health: 88, temp: "175.0 °C", pressure: "3.8 bar", vib: "2.3 mm/s", rpm: "710 RPM", cycleSec: "1.7s", pdmRisk: "Düşük (%18)", barcode: "BC-DYE-095-03" }
+    ],
+    orders: [
+      {
+        code: "WO-6015", product: "Gabardin Dokuma Kumaş", lot: "LOT-TX-508", barcode: "869000601501", target: 4500, lineId: "HAT-02", station: "İST-02B · Hava Jetli Dokuma", assignedOp: "Emre Aydın", cycleTime: "1.8 sn/m",
+        params: [
+          { k: "Kumaş Gramajı", v: "260 g/m² (±3%)" },
+          { k: "Çözgü Gerginliği", v: "420 N" },
+          { k: "Ram Fikse Isısı", v: "175.0 °C (±2 °C)" },
+          { k: "Renk Farkı (ΔE)", v: "≤ 0.80" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "tekstil_iplik_lot",
+        lineId: "HAT-01",
+        title: "İplik Lotu & Haşıl Reçete Onayı",
+        code: "MES-T01",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Üretim Planlama (MRP)",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Yeni iplik lot barkodu ve haşıl viskozite kaydı MES'te teyit bekliyor.",
+        rootCause: "Yeni iplik partisinde MES lot eşleştirmesinin bekletilmesi",
+        d8Options: [
+          "İplik lotu ve haşıl reçetesi MES ekranında onaylandı",
+          "Haşıl sıcaklık kontrolü kapatıldı",
+          "Lot barkod takibi devre dışı bırakıldı"
+        ]
+      },
+      {
+        id: "tekstil_atkı_hatasi",
+        lineId: "HAT-02",
+        title: "Saha Görevi: Atkı Hatalı Kumaş Bölümü Ayıklama",
+        code: "SAHA-T05",
+        category: "Saha Görevi / Dokuma",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-02): Atkı çizgili ve hatalı dokunmuş kumaş bölümleri sahada ayıklanmalı.",
+        rootCause: "Atkı atım sensörü ve çözgü gerginlik dengesizliği",
+        d8Options: [
+          "Sahada atkı hatalı bölümler ayrıldı ve çözgü gerginliği sabitlendi",
+          "Dokuma tezgahı kapatıldı",
+          "Sensör kontrolü devre dışı bırakıldı"
+        ]
+      }
+    ]
+  },
+  {
+    id: "plastik",
+    name: "Plastik Enjeksiyon",
+    plantCode: "TESİS-B02 · KALIPLAMA & ENJEKSİYON",
+    logoKey: "logo_plastik",
+    shortCode: "PLST",
+    accent: "#e0a93b",
+    unit: "parça",
+    supervisor: "Murat Aksoy (Kalıphane & Enjeksiyon Amiri)",
+    lines: [
+      { id: "HAT-01", name: "Kurutucu & Dozajlama", machine: "DryHopper DH-90", operator: "Burak Öz", station: "İST-01A · Nem Sensörü & Bunker", oee: 89, rate: 3, kw: 22.4, health: 91, temp: "82.0 °C", pressure: "2.4 bar", vib: "1.6 mm/s", rpm: "650 RPM", cycleSec: "2.2s", pdmRisk: "Düşük (%12)", barcode: "BC-DRY-090-01" },
+      { id: "HAT-02", name: "Enjeksiyon Presleri", machine: "InjPress IP-320T", operator: "Canan Yıldız", station: "İST-02B · Kalıp Kilitleme & Vida", oee: 87, rate: 3, kw: 54.0, health: 83, temp: "238.0 °C", pressure: "118.0 bar", vib: "3.2 mm/s", rpm: "1540 RPM", cycleSec: "2.5s", pdmRisk: "Yüksek (%41)", barcode: "BC-INJ-320-02" },
+      { id: "HAT-03", name: "Robot Çapak & Paketleme", machine: "PackRob R-16", operator: "Onur Kara", station: "İST-03C · Servo Tutucu & Kantar", oee: 88, rate: 3, kw: 18.2, health: 89, temp: "26.5 °C", pressure: "6.0 bar", vib: "2.0 mm/s", rpm: "1100 RPM", cycleSec: "2.1s", pdmRisk: "Düşük (%16)", barcode: "BC-PCK-016-03" }
+    ],
+    orders: [
+      {
+        code: "WO-2011", product: "PA66 GF30 Bağlantı Braketi", lot: "LOT-PA-882", barcode: "869000201101", target: 2800, lineId: "HAT-02", station: "İST-02B · Enjeksiyon Presi", assignedOp: "Canan Yıldız", cycleTime: "2.5 sn/parça",
+        params: [
+          { k: "Enjeksiyon Isısı", v: "238.0 °C (±3 °C)" },
+          { k: "Ütüleme Basıncı", v: "118.0 bar" },
+          { k: "Parça Ağırlığı", v: "42.4 g (±0.4 g)" },
+          { k: "Kurutma Nem", v: "≤ %0.18" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "plastik_lot",
+        lineId: "HAT-01",
+        title: "Granül Lot Nem & Kurutma Kaydı",
+        code: "MES-P01",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Kalite Güvence & 8D",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Yeni PA66 granül lotu ve kurutma süresi MES kaydı bekliyor.",
+        rootCause: "Granül lot değişiminde MES izlenebilirlik teyidinin beklenmesi",
+        d8Options: [
+          "Granül lotu ve kurutma kaydı MES üzerinde onaylandı",
+          "Kurutma kontrolü kapatıldı",
+          "Nem değeri sıfırlandı"
+        ]
+      },
+      {
+        id: "plastik_ayikla",
+        lineId: "HAT-02",
+        title: "Saha Görevi: Çapaklı & Eksik Dolum Parça Ayıklama",
+        code: "SAHA-P11",
+        category: "Saha Görevi / Kalıp",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-02): Sahada hatalı kalıplanmış parçaların ayıklanması gerekiyor.",
+        rootCause: "Kalıp kapanma dengesi ve ütüleme basıncı sapması",
+        d8Options: [
+          "Sahada hatalı parçalar ayrıldı ve kalıp/ütüleme kontrolü sabitlendi",
+          "Pres durdurma butonu kilitlendi",
+          "Kalıp soğutması kapatıldı"
+        ]
+      }
+    ]
+  },
+  {
+    id: "otomotiv",
+    name: "Otomotiv Yan Sanayi",
+    plantCode: "TESİS-C03 · CNC & KAYNAK HÜCRESİ",
+    logoKey: "logo_otomotiv",
+    shortCode: "OTOM",
+    accent: "#2bb3ae",
+    unit: "adet",
+    supervisor: "Cemil Yılmaz (CNC & Kaynak Amiri)",
+    lines: [
+      { id: "HAT-01", name: "5 Eksen CNC İşleme", machine: "CNC-Mill CMX-5", operator: "Kadir Şen", station: "İST-01A · Mil Takımı & Fikstür", oee: 88, rate: 2, kw: 44.5, health: 85, temp: "31.4 °C", pressure: "70.0 bar", vib: "2.8 mm/s", rpm: "8500 RPM", cycleSec: "4.2s", pdmRisk: "Orta (%34)", barcode: "BC-CNC-005-01" },
+      { id: "HAT-02", name: "Gazaltı Kaynak Robotu", machine: "WeldBot MIG-6A", operator: "Seda Polat", station: "İST-02B · Torç Gaz & Akım", oee: 86, rate: 3, kw: 49.2, health: 82, temp: "44.0 °C", pressure: "18.5 bar", vib: "3.0 mm/s", rpm: "1200 RPM", cycleSec: "3.1s", pdmRisk: "Orta (%38)", barcode: "BC-WLD-006-02" },
+      { id: "HAT-03", name: "3D Optik Ölçüm & Lot", machine: "CMM-Optic Q3D", operator: "Tolga Güneş", station: "İST-03C · Lazer Tarama & DMC", oee: 91, rate: 2, kw: 14.0, health: 94, temp: "21.0 °C", pressure: "5.5 bar", vib: "1.1 mm/s", rpm: "600 RPM", cycleSec: "2.8s", pdmRisk: "Düşük (%9)", barcode: "BC-CMM-003-03" }
+    ],
+    orders: [
+      {
+        code: "WO-3091", product: "Alüminyum Süspansiyon Taşıyıcı", lot: "LOT-AL7075-19", barcode: "869000309101", target: 1600, lineId: "HAT-01", station: "İST-01A · 5 Eksen CNC", assignedOp: "Kadir Şen", cycleTime: "4.2 sn/adet",
+        params: [
+          { k: "Delik Toleransı", v: "Ø24.000 ±0.012 mm" },
+          { k: "Yüzey Pürüzlülüğü", v: "Ra 0.80 µm" },
+          { k: "Kaynak Akımı", v: "185 A" },
+          { k: "Barkod Formatı", v: "ECC200 DataMatrix" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "oto_takim_mes",
+        lineId: "HAT-01",
+        title: "CNC Takım Ömrü & Barkod Teyidi",
+        code: "MES-C02",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Takım ömür sayacı ve parça lot barkodu MES teyidi bekliyor.",
+        rootCause: "Takım ömür eşik uyarısının MES'te onaylanmaması",
+        d8Options: [
+          "Takım ömür sayacı ve barkod teyidi MES'te güncellendi",
+          "Ölçüm kontrolü atlandı",
+          "CNC tezgahı kapatıldı"
+        ]
+      },
+      {
+        id: "oto_kaynak_saha",
+        lineId: "HAT-02",
+        title: "Saha Görevi: Kaynak Hatalı Parça Ayıklama",
+        code: "SAHA-W12",
+        category: "Saha Görevi / Kaynak",
+        targetUnit: "Kalite Güvence & 8D",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-02): Hatalı kaynaklı parçaların sahada banttan ayrılması gerekiyor.",
+        rootCause: "Koruyucu gaz debisi ve nozul sıçrantısı",
+        d8Options: [
+          "Sahada hatalı parçalar ayrıldı ve kaynak parametre kontrolü yapıldı",
+          "Fikstür kilidi açıldı",
+          "Gaz vanası kapatıldı"
+        ]
+      }
+    ]
+  },
+  {
+    id: "ilac",
+    name: "İlaç & Kozmetik",
+    plantCode: "TESİS-D04 · GMP STERİL & AMBALAJ",
+    logoKey: "logo_ilac",
+    shortCode: "GMP",
+    accent: "#3fb97f",
+    unit: "kutu",
+    supervisor: "Dr. Ebru Karahan (GMP Üretim Amiri)",
+    lines: [
+      { id: "HAT-01", name: "Reaktör Karışım & Faz", machine: "MixReactor MR-500", operator: "Buse Tekin", station: "İST-01A · Homojenizatör & pH", oee: 91, rate: 3, kw: 29.5, health: 93, temp: "36.5 °C", pressure: "1.3 bar", vib: "1.5 mm/s", rpm: "780 RPM", cycleSec: "2.0s", pdmRisk: "Düşük (%10)", barcode: "BC-MIX-500-01" },
+      { id: "HAT-02", name: "Blister Dolum & Kapama", machine: "BlisterPack BP-180", operator: "Arda Yavuz", station: "İST-02B · Isıl Kapama & Vakum", oee: 89, rate: 3, kw: 24.1, health: 88, temp: "148.0 °C", pressure: "5.2 bar", vib: "2.2 mm/s", rpm: "1050 RPM", cycleSec: "2.1s", pdmRisk: "Düşük (%19)", barcode: "BC-BLS-180-02" },
+      { id: "HAT-03", name: "Kutulama & İTS Karekod", machine: "CartonTrack CT-200", operator: "Gizem Acar", station: "İST-03C · İTS Okuma & Tartım", oee: 90, rate: 3, kw: 16.4, health: 90, temp: "20.5 °C", pressure: "4.0 bar", vib: "1.7 mm/s", rpm: "980 RPM", cycleSec: "1.9s", pdmRisk: "Düşük (%15)", barcode: "BC-CRT-200-03" }
+    ],
+    orders: [
+      {
+        code: "WO-4010", product: "Dermatolojik Bakım Emülsiyonu 50 ml", lot: "BATCH-GMP-902", barcode: "869000401001", target: 3000, lineId: "HAT-03", station: "İST-03C · Kutulama & İTS", assignedOp: "Gizem Acar", cycleTime: "1.9 sn/kutu",
+        params: [
+          { k: "Viskozite", v: "4200 cP (±250)" },
+          { k: "pH Değeri", v: "5.40 (±0.20)" },
+          { k: "Oda Fark Basıncı", v: "+18 Pa" },
+          { k: "İTS Karekod", v: "ISO/IEC Grade A" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "gmp_batch",
+        lineId: "HAT-01",
+        title: "GMP Batch Kaydı & pH/Isı Teyidi",
+        code: "MES-G01",
+        category: "GMP / MES Teyit",
+        targetUnit: "Kalite Güvence & 8D",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Batch reçete parametreleri MES üzerinden onay bekliyor.",
+        rootCause: "Batch kayıt adımının MES'te teyit edilmemesi",
+        d8Options: [
+          "GMP batch kaydı ve proses parametreleri MES'te onaylandı",
+          "Kayıt adımı atlandı",
+          "Reaktör durduruldu"
+        ]
+      },
+      {
+        id: "gmp_its",
+        lineId: "HAT-03",
+        title: "Saha Görevi: İTS Karekod Hatalı Kutuların Ayıklanması",
+        code: "SAHA-G08",
+        category: "Saha Görevi / İTS",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-03): Hatalı karekodlu kutular sahada banttan ayrılmalı.",
+        rootCause: "Karekod kontrast sapması ve odak ayarı",
+        d8Options: [
+          "Sahada hatalı kutular ayrıldı ve karekod okuma doğrulandı",
+          "İTS raporlaması kapatıldı",
+          "Kutulama ünitesi durduruldu"
+        ]
+      }
+    ]
+  },
+  {
+    id: "metal",
+    name: "Metal Şekillendirme & Pres",
+    plantCode: "TESİS-E05 · PRESHANE & BOYA",
+    logoKey: "logo_metal",
+    shortCode: "METL",
+    accent: "#93c5fd",
+    unit: "parça",
+    supervisor: "İsmail Doğan (Preshane Amiri)",
+    lines: [
+      { id: "HAT-01", name: "Rulo Açıcı & Doğrultma", machine: "CoilFeed CF-600", operator: "Fatih Korkmaz", station: "İST-01A · Bobin Açıcı & Merdane", oee: 88, rate: 3, kw: 25.0, health: 89, temp: "24.0 °C", pressure: "85.0 bar", vib: "2.4 mm/s", rpm: "720 RPM", cycleSec: "2.4s", pdmRisk: "Düşük (%17)", barcode: "BC-COIL-600-01" },
+      { id: "HAT-02", name: "Eksantrik Pres Hattı", machine: "EccPress EP-400T", operator: "Cenk Bulut", station: "İST-02B · Koç Darbe & Kalıp", oee: 86, rate: 2, kw: 58.5, health: 80, temp: "38.0 °C", pressure: "145.0 bar", vib: "3.7 mm/s", rpm: "640 RPM", cycleSec: "3.3s", pdmRisk: "Yüksek (%46)", barcode: "BC-PRS-400-02" },
+      { id: "HAT-03", name: "Elektrostatik Boyahane", machine: "CoatLine EC-90", operator: "Merve Tunç", station: "İST-03C · Toz Tabanca & Kür Fırın", oee: 87, rate: 2, kw: 41.2, health: 86, temp: "185.0 °C", pressure: "6.2 bar", vib: "2.1 mm/s", rpm: "1300 RPM", cycleSec: "3.0s", pdmRisk: "Orta (%26)", barcode: "BC-COT-090-03" }
+    ],
+    orders: [
+      {
+        code: "WO-5020", product: "DKP 1.5 mm Braket & Konsol", lot: "LOT-DKP-311", barcode: "869000502001", target: 2500, lineId: "HAT-02", station: "İST-02B · Eksantrik Pres", assignedOp: "Cenk Bulut", cycleTime: "3.3 sn/parça",
+        params: [
+          { k: "Sac Kalınlığı", v: "1.50 mm (±0.05 mm)" },
+          { k: "Boya Kalınlığı", v: "65–85 µm" },
+          { k: "Fırın Kür Isısı", v: "185.0 °C" },
+          { k: "Yapışma Testi", v: "ISO GT-0" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "metal_rulo",
+        lineId: "HAT-01",
+        title: "Rulo Sac Lotu & Kalınlık Teyidi",
+        code: "MES-M01",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Kalite Güvence & 8D",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Rulo sac sertifika/lot barkodu MES teyidi bekliyor.",
+        rootCause: "Yeni bobin lotunun MES ekranında teyit edilmemesi",
+        d8Options: [
+          "Rulo lotu ve sac kalınlık reçetesi MES'te doğrulandı",
+          "Kalınlık kontrolü kapatıldı",
+          "Besleme hattı durduruldu"
+        ]
+      },
+      {
+        id: "metal_pres",
+        lineId: "HAT-02",
+        title: "Saha Görevi: Hatalı Şekillendirilmiş Parça Ayıklama",
+        code: "SAHA-M14",
+        category: "Saha Görevi / Pres",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-02): Kusurlu pres parçaları sahada banttan ayrılmalı.",
+        rootCause: "Kalıp basıncı ve sac yağlama dengesi",
+        d8Options: [
+          "Sahada kusurlu parçalar ayrıldı ve pres/yağlama kontrolü yapıldı",
+          "Emniyet kilidi kapatıldı",
+          "Fırın kapatıldı"
+        ]
+      }
+    ]
+  },
+  {
+    id: "elektronik",
+    name: "Elektronik",
+    plantCode: "TESİS-G07 · SMT & AOI HATTI",
+    logoKey: "logo_elektronik",
+    shortCode: "SMT",
+    accent: "#2bb3ae",
+    unit: "PCB",
+    supervisor: "Serdar Kılıç (SMT Proses Amiri)",
+    lines: [
+      { id: "HAT-01", name: "Krem Lehim Baskı & SPI", machine: "SolderPrint SP-400", operator: "Kerem Yalçın", station: "İST-01A · Elek Silecek & 3D SPI", oee: 90, rate: 3, kw: 16.5, health: 92, temp: "22.5 °C", pressure: "4.5 bar", vib: "1.4 mm/s", rpm: "520 RPM", cycleSec: "2.1s", pdmRisk: "Düşük (%12)", barcode: "BC-SMT-400-01" },
+      { id: "HAT-02", name: "Yüksek Hızlı SMD Dizgi", machine: "PickPlace PP-900", operator: "Pınar Eren", station: "İST-02B · Vakum Kafası & Besleyici", oee: 88, rate: 3, kw: 28.0, health: 85, temp: "23.0 °C", pressure: "6.1 bar", vib: "2.7 mm/s", rpm: "2400 RPM", cycleSec: "2.2s", pdmRisk: "Orta (%31)", barcode: "BC-PNP-900-02" },
+      { id: "HAT-03", name: "Reflow Fırını & 3D AOI", machine: "ReflowAOI RF-8Z", operator: "Yusuf Bozkurt", station: "İST-03C · 8 Bölgeli Isı & AOI Kam", oee: 89, rate: 3, kw: 39.4, health: 90, temp: "245.0 °C", pressure: "3.8 bar", vib: "1.6 mm/s", rpm: "680 RPM", cycleSec: "2.0s", pdmRisk: "Düşük (%15)", barcode: "BC-RFL-08Z-03" }
+    ],
+    orders: [
+      {
+        code: "WO-7012", product: "Endüstriyel IoT Kontrol Kartı v3.2", lot: "LOT-PCB-774", barcode: "869000701201", target: 2600, lineId: "HAT-02", station: "İST-02B · SMD Dizgi", assignedOp: "Pınar Eren", cycleTime: "2.2 sn/PCB",
+        params: [
+          { k: "Lehim Kalite Standardı", v: "IPC-A-610 Class 2" },
+          { k: "Reflow Tepe Isısı", v: "245.0 °C (±3 °C)" },
+          { k: "Pasta Hacim Sapması", v: "≤ %12" },
+          { k: "AOI Hata Hedefi", v: "0 PPM" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "smt_lot",
+        lineId: "HAT-01",
+        title: "Krem Lehim Lotu & Reflow Reçete Onayı",
+        code: "MES-S01",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Kalite Güvence & 8D",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Lehim pastası lotu ve reflow profili MES teyidi bekliyor.",
+        rootCause: "Lot/reçete geçişinde MES onayının beklenmesi",
+        d8Options: [
+          "Lehim lotu ve reflow profili MES üzerinde onaylandı",
+          "AOI kontrolü kapatıldı",
+          "Dizgi hattı durduruldu"
+        ]
+      },
+      {
+        id: "smt_aoi_saha",
+        lineId: "HAT-02",
+        title: "Saha Görevi: Hatalı Dizilmiş PCB Kart Ayıklama",
+        code: "SAHA-P06",
+        category: "Saha Görevi / Dizgi",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-02): Hatalı dizilmiş PCB kartlar sahada banttan ayrılmalı.",
+        rootCause: "Nozul vakum sapması ve komponent kayması",
+        d8Options: [
+          "Sahada hatalı kartlar ayrıldı ve dizgi kalibrasyonu doğrulandı",
+          "Reflow fırını kapatıldı",
+          "Barkod okuyucu devre dışı bırakıldı"
+        ]
+      }
+    ]
+  },
+  {
+    id: "kimya",
+    name: "Kimya & Boya Üretimi",
+    plantCode: "TESİS-H08 · KİMYASAL PROSES & DOLUM",
+    logoKey: "logo_kimya",
+    shortCode: "KMYA",
+    accent: "#e0a93b",
+    unit: "bidon",
+    supervisor: "Nuri Öztürk (Kimyasal Proses Amiri)",
+    lines: [
+      { id: "HAT-01", name: "Hammadde Dozajlama", machine: "DoseUnit DU-100", operator: "Aslıhan Uçar", station: "İST-01A · Kütle Debimetre & Valf", oee: 89, rate: 2, kw: 21.0, health: 90, temp: "25.0 °C", pressure: "3.2 bar", vib: "1.7 mm/s", rpm: "600 RPM", cycleSec: "3.0s", pdmRisk: "Düşük (%14)", barcode: "BC-DOS-100-01" },
+      { id: "HAT-02", name: "Yüksek Devirli Mikser", machine: "HighShear HS-2000", operator: "Volkan Soylu", station: "İST-02B · Disolver Türbin & Ceket", oee: 87, rate: 2, kw: 47.5, health: 83, temp: "54.0 °C", pressure: "2.1 bar", vib: "3.3 mm/s", rpm: "1850 RPM", cycleSec: "3.2s", pdmRisk: "Yüksek (%40)", barcode: "BC-SHS-200-02" },
+      { id: "HAT-03", name: "Bidon & Varil Dolum Hattı", machine: "FillStation FS-60", operator: "Tuğçe Kaplan", station: "İST-03C · Gravimetrik Dolum & Kapatma", oee: 88, rate: 2, kw: 19.8, health: 87, temp: "24.0 °C", pressure: "4.6 bar", vib: "2.0 mm/s", rpm: "820 RPM", cycleSec: "2.9s", pdmRisk: "Orta (%24)", barcode: "BC-FLS-060-03" }
+    ],
+    orders: [
+      {
+        code: "WO-8008", product: "Endüstriyel Akrilik Kaplama 20 L", lot: "LOT-CHM-612", barcode: "869000800801", target: 1200, lineId: "HAT-03", station: "İST-03C · Bidon Dolum", assignedOp: "Tuğçe Kaplan", cycleTime: "2.9 sn/bidon",
+        params: [
+          { k: "Viskozite (Ford Cup 4)", v: "68–74 sn" },
+          { k: "Yoğunluk", v: "1.24 g/cm³ (±0.02)" },
+          { k: "Net Dolum", v: "24.80 kg (±0.15 kg)" },
+          { k: "Mikser Isısı", v: "54.0 °C" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "kimya_lot",
+        lineId: "HAT-01",
+        title: "Dozaj Lotu & Viskozite Reçete Teyidi",
+        code: "MES-K01",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Kalite Güvence & 8D",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Reçete dozaj lotu MES ekranından teyit bekliyor.",
+        rootCause: "Dozaj lot teyidinin MES'te tamamlanmaması",
+        d8Options: [
+          "Dozaj lotu ve reçete oranları MES'te onaylandı",
+          "Mikser devri kapatıldı",
+          "Dozaj kontrolü iptal edildi"
+        ]
+      },
+      {
+        id: "kimya_bidon",
+        lineId: "HAT-03",
+        title: "Saha Görevi: Eksik Dolumlu Bidon Ayıklama",
+        code: "SAHA-K09",
+        category: "Saha Görevi / Dolum",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-03): Eksik dolumlu bidonlar sahada banttan ayrılmalı.",
+        rootCause: "Nozul akış sapması ve kantar toleransı",
+        d8Options: [
+          "Sahada eksik bidonlar ayrıldı ve dolum kantar kalibrasyonu yapıldı",
+          "Tank vanası kapatıldı",
+          "Hat enerjisi kesildi"
+        ]
+      }
+    ]
+  },
+  {
+    id: "kagit",
+    name: "Kağıt, Karton & Ambalaj",
+    plantCode: "TESİS-J09 · OLUKLU & BASKI",
+    logoKey: "logo_kagit",
+    shortCode: "KAGT",
+    accent: "#2bb3ae",
+    unit: "koli",
+    supervisor: "Metin Varol (Oluklu & Baskı Amiri)",
+    lines: [
+      { id: "HAT-01", name: "Oluklu Mukavva Hattı", machine: "Corrugator CG-220", operator: "Oğuzhan Bal", station: "İST-01A · Tek Yüz Oluk & Buhar", oee: 89, rate: 4, kw: 43.0, health: 89, temp: "168.0 °C", pressure: "7.5 bar", vib: "2.3 mm/s", rpm: "1120 RPM", cycleSec: "1.5s", pdmRisk: "Düşük (%17)", barcode: "BC-CRG-220-01" },
+      { id: "HAT-02", name: "Flekso Baskı Ünitesi", machine: "FlexoPress FP-4C", operator: "İrem Sarı", station: "İST-02B · Aniloks Silindir & Klişe", oee: 87, rate: 4, kw: 27.6, health: 82, temp: "24.0 °C", pressure: "4.0 bar", vib: "3.1 mm/s", rpm: "1360 RPM", cycleSec: "1.6s", pdmRisk: "Orta (%36)", barcode: "BC-FLX-04C-02" },
+      { id: "HAT-03", name: "Kesim, Katlama & Yapıştırma", machine: "FolderGluer FG-160", operator: "Samet Taş", station: "İST-03C · Slotter Bıçak & Tutkal", oee: 88, rate: 4, kw: 22.4, health: 90, temp: "25.5 °C", pressure: "5.2 bar", vib: "1.8 mm/s", rpm: "1240 RPM", cycleSec: "1.5s", pdmRisk: "Düşük (%13)", barcode: "BC-FGL-160-03" }
+    ],
+    orders: [
+      {
+        code: "WO-9030", product: "BC Dalga E-Ticaret Koli 40x30x25", lot: "LOT-KRT-209", barcode: "869000903001", target: 5000, lineId: "HAT-02", station: "İST-02B · Flekso Baskı", assignedOp: "İrem Sarı", cycleTime: "1.6 sn/koli",
+        params: [
+          { k: "ECT Basınç Dayanımı", v: "≥ 6.8 kN/m" },
+          { k: "Baskı Kayması", v: "≤ 0.50 mm" },
+          { k: "Oluk Silindir Isısı", v: "168.0 °C" },
+          { k: "Tutkal Hattı", v: "Sürekli / Kesintisiz" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "kagit_lot",
+        lineId: "HAT-01",
+        title: "Kağıt Bobin Lotu & ECT Reçete Teyidi",
+        code: "MES-A01",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Üretim Planlama (MRP)",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Yeni bobin lotu ve reçete parametresi MES teyidi bekliyor.",
+        rootCause: "Bobin lot geçişinde MES teyidinin beklenmesi",
+        d8Options: [
+          "Bobin lotu ve kalite reçetesi MES'te doğrulandı",
+          "Baskı ünitesi kapatıldı",
+          "Kalite kontrol atlandı"
+        ]
+      },
+      {
+        id: "kagit_koli",
+        lineId: "HAT-02",
+        title: "Saha Görevi: Baskı Hatalı Kolilerin Ayıklanması",
+        code: "SAHA-A03",
+        category: "Saha Görevi / Baskı",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-02): Baskı kayması olan koliler sahada banttan ayrılmalı.",
+        rootCause: "Baskı silindir paralelliği ve boya viskozitesi",
+        d8Options: [
+          "Sahada hatalı koliler ayrıldı ve baskı ayarı sabitlendi",
+          "Kesim ünitesi durduruldu",
+          "Buhar valfi kapatıldı"
+        ]
+      }
+    ]
+  },
+  {
+    id: "cam",
+    name: "Cam & Seramik Üretimi",
+    plantCode: "TESİS-K10 · FIRIN & ŞEKİLLENDİRME",
+    logoKey: "logo_cam",
+    shortCode: "CAM",
+    accent: "#2bb3ae",
+    unit: "adet",
+    supervisor: "Faruk Güler (Fırın & Şekillendirme Amiri)",
+    lines: [
+      { id: "HAT-01", name: "Harman & Ergitme Fırını", machine: "MeltFurnace MF-1450", operator: "Halil İbrahim", station: "İST-01A · Brülör & Tank Isısı", oee: 91, rate: 3, kw: 64.0, health: 92, temp: "1440.0 °C", pressure: "1.8 mbar", vib: "1.6 mm/s", rpm: "450 RPM", cycleSec: "2.3s", pdmRisk: "Düşük (%12)", barcode: "BC-MLT-145-01" },
+      { id: "HAT-02", name: "Şekillendirme & Pres", machine: "FormPress FP-12S", operator: "Melis Erdem", station: "İST-02B · IS Kalıp & Hava Soğutma", oee: 88, rate: 3, kw: 35.5, health: 87, temp: "580.0 °C", pressure: "5.4 bar", vib: "2.5 mm/s", rpm: "900 RPM", cycleSec: "2.4s", pdmRisk: "Orta (%25)", barcode: "BC-FRM-012-02" },
+      { id: "HAT-03", name: "Tavlama Lehr & Optik Kontrol", machine: "AnnealOptic AO-90", operator: "Berkay Yurt", station: "İST-03C · Tavlama Tüneli & Polariskop", oee: 89, rate: 2, kw: 31.0, health: 84, temp: "495.0 °C", pressure: "3.5 bar", vib: "2.9 mm/s", rpm: "760 RPM", cycleSec: "2.8s", pdmRisk: "Orta (%35)", barcode: "BC-ANN-090-03" }
+    ],
+    orders: [
+      {
+        code: "WO-1104", product: "Temperli Cam Kavanoz & Seramik Tabak", lot: "LOT-GLS-801", barcode: "869000110401", target: 2700, lineId: "HAT-03", station: "İST-03C · Tavlama & Optik", assignedOp: "Berkay Yurt", cycleTime: "2.8 sn/adet",
+        params: [
+          { k: "Polariskop Gerilim", v: "≤ 180 nm/cm" },
+          { k: "Ergitme Fırın Isısı", v: "1440.0 °C" },
+          { k: "Tavlama Lehr Isısı", v: "495.0 °C" },
+          { k: "Termal Şok", v: "120 °C ΔT" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "cam_lot",
+        lineId: "HAT-01",
+        title: "Harman Lotu & Fırın Reçete Teyidi",
+        code: "MES-V01",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Enerji & Tesis Altyapısı",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Harman lot kaydı ve fırın reçetesi MES teyidi bekliyor.",
+        rootCause: "Harman lot doğrulamasının MES'te beklenmesi",
+        d8Options: [
+          "Harman lotu ve fırın reçetesi MES'te onaylandı",
+          "Fırın kontrolü kapatıldı",
+          "Optik kontrol devre dışı bırakıldı"
+        ]
+      },
+      {
+        id: "cam_kusur",
+        lineId: "HAT-03",
+        title: "Saha Görevi: Kusurlu Ürün Ayıklama",
+        code: "SAHA-V02",
+        category: "Saha Görevi / Kalite",
+        targetUnit: "Kalite Güvence & 8D",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-03): Kusurlu ürünler sahada banttan ayrılmalı.",
+        rootCause: "Soğutma bölgesi hava akışı dengesizliği",
+        d8Options: [
+          "Sahada kusurlu ürünler ayrıldı ve soğutma akışı dengelendi",
+          "Ergitme fırını kapatıldı",
+          "Pres durduruldu"
+        ]
+      }
+    ]
+  },
+  {
+    id: "beyazesya",
+    name: "Beyaz Eşya Montaj Hattı",
+    plantCode: "TESİS-L11 · MONTAJ & TEST",
+    logoKey: "logo_beyazesya",
+    shortCode: "BEYZ",
+    accent: "#2bb3ae",
+    unit: "ünite",
+    supervisor: "Sinan Keskin (Montaj & Test Amiri)",
+    lines: [
+      { id: "HAT-01", name: "Gövde Sac Şekillendirme", machine: "BodyForm BF-210", operator: "Ece Kılıç", station: "İST-01A · Büküm & Puntalama", oee: 88, rate: 2, kw: 32.4, health: 89, temp: "22.0 °C", pressure: "6.5 bar", vib: "2.1 mm/s", rpm: "880 RPM", cycleSec: "3.4s", pdmRisk: "Düşük (%16)", barcode: "BC-BDY-210-01" },
+      { id: "HAT-02", name: "Poliüretan Köpük Enjeksiyon", machine: "FoamInj FI-80", operator: "Barış Tek", station: "İST-02B · Kalıp Isıtma & Dozaj", oee: 87, rate: 2, kw: 36.8, health: 85, temp: "28.5 °C", pressure: "125.0 bar", vib: "2.6 mm/s", rpm: "1450 RPM", cycleSec: "3.6s", pdmRisk: "Orta (%29)", barcode: "BC-FOM-080-02" },
+      { id: "HAT-03", name: "Final Montaj & Fonksiyon Testi", machine: "FuncTest FT-100", operator: "Dilara Acar", station: "İST-03C · Kaçak Akım & Soğutma", oee: 90, rate: 2, kw: 19.6, health: 82, temp: "21.5 °C", pressure: "5.0 bar", vib: "3.2 mm/s", rpm: "750 RPM", cycleSec: "3.1s", pdmRisk: "Orta (%37)", barcode: "BC-FNC-100-03" }
+    ],
+    orders: [
+      {
+        code: "WO-1205", product: "No-Frost Buzdolabı Kabin Montajı", lot: "LOT-WHA-410", barcode: "869000120501", target: 900, lineId: "HAT-03", station: "İST-03C · Fonksiyon Testi", assignedOp: "Dilara Acar", cycleTime: "3.1 sn/ünite",
+        params: [
+          { k: "Kaçak Akım", v: "< 0.25 mA" },
+          { k: "İzolasyon Direnci", v: "> 10.0 MΩ" },
+          { k: "Köpük Basıncı", v: "125.0 bar" },
+          { k: "Kapı Contası", v: "Sızdırmaz OK" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "beyaz_lot",
+        lineId: "HAT-01",
+        title: "Kabin Lot Barkodu & Test Reçete Teyidi",
+        code: "MES-W01",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Kalite Güvence & 8D",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Kabin seri/lot barkodu ve test reçetesi MES teyidi bekliyor.",
+        rootCause: "Lot barkod doğrulamasının MES'te beklenmesi",
+        d8Options: [
+          "Lot barkodu ve test reçetesi MES üzerinde onaylandı",
+          "Test istasyonu kapatıldı",
+          "Montaj hattı durduruldu"
+        ]
+      },
+      {
+        id: "beyaz_test_saha",
+        lineId: "HAT-03",
+        title: "Saha Görevi: Hatalı Ünite Ayıklama",
+        code: "SAHA-W03",
+        category: "Saha Görevi / Final Test",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-03): Test uyarısı veren üniteler sahada banttan ayrılmalı.",
+        rootCause: "Soket temas noktası ve test probu hizası",
+        d8Options: [
+          "Sahada hatalı üniteler ayrıldı ve test kontrolü standartlaştırıldı",
+          "Köpük pompası kapatıldı",
+          "Hat enerjisi kesildi"
+        ]
+      }
+    ]
+  },
+  {
+    id: "enerji",
+    name: "Batarya & Yenilenebilir Enerji",
+    plantCode: "TESİS-M12 · HÜCRE & LAMİNASYON",
+    logoKey: "logo_enerji",
+    shortCode: "ENRJ",
+    accent: "#3fb97f",
+    unit: "modül",
+    supervisor: "Koray Tanrıverdi (Hücre & Laminasyon Amiri)",
+    lines: [
+      { id: "HAT-01", name: "Hücre Dizgi & Lehimleme", machine: "CellStringer CS-400", operator: "Ceren Mutlu", station: "İST-01A · Kızılötesi Lehim & Hiza", oee: 90, rate: 2, kw: 27.5, health: 91, temp: "23.0 °C", pressure: "5.5 bar", vib: "1.6 mm/s", rpm: "1020 RPM", cycleSec: "2.7s", pdmRisk: "Düşük (%13)", barcode: "BC-CEL-400-01" },
+      { id: "HAT-02", name: "Vakum Laminasyon Hattı", machine: "VacLam VL-250", operator: "Görkem Dağ", station: "İST-02B · Vakum Pompası & Plaka", oee: 88, rate: 2, kw: 45.2, health: 86, temp: "152.0 °C", pressure: "-0.98 bar", vib: "2.4 mm/s", rpm: "1480 RPM", cycleSec: "3.0s", pdmRisk: "Orta (%27)", barcode: "BC-LAM-250-02" },
+      { id: "HAT-03", name: "EL Test & Elektriksel Analiz", machine: "EL-Tester ET-80", operator: "Selin Uygun", station: "İST-03C · Elektrolüminesans & IV", oee: 91, rate: 2, kw: 18.0, health: 83, temp: "24.0 °C", pressure: "4.0 bar", vib: "2.9 mm/s", rpm: "700 RPM", cycleSec: "2.6s", pdmRisk: "Orta (%36)", barcode: "BC-ELT-080-03" }
+    ],
+    orders: [
+      {
+        code: "WO-1309", product: "Yüksek Verimli Modül / Batarya Paketi", lot: "LOT-NRG-950", barcode: "869000130901", target: 1500, lineId: "HAT-03", station: "İST-03C · EL Test & Analiz", assignedOp: "Selin Uygun", cycleTime: "2.6 sn/modül",
+        params: [
+          { k: "Laminasyon Isısı", v: "152.0 °C (±2 °C)" },
+          { k: "Vakum Seviyesi", v: "-0.98 bar" },
+          { k: "Hücre Gerilim Farkı", v: "≤ 15 mV" },
+          { k: "EL Mikro Çatlak", v: "0 Kritik" }
+        ]
+      }
+    ],
+    scenarios: [
+      {
+        id: "enerji_lot",
+        lineId: "HAT-01",
+        title: "Hücre Lot Barkodu & Laminasyon Reçetesi",
+        code: "MES-N01",
+        category: "MES İzlenebilirlik",
+        targetUnit: "Kalite Güvence & 8D",
+        requiresFloor: false,
+        miniGame: "balance",
+        operatorQuestion: "HAT-01: Hücre lot barkodu ve laminasyon reçetesi MES teyidi bekliyor.",
+        rootCause: "Lot barkod teyidinin MES'te beklenmesi",
+        d8Options: [
+          "Hücre lotu ve laminasyon reçetesi MES'te onaylandı",
+          "EL test ünitesi kapatıldı",
+          "Dizgi hattı durduruldu"
+        ]
+      },
+      {
+        id: "enerji_el_saha",
+        lineId: "HAT-03",
+        title: "Saha Görevi: Kusurlu Modül Ayıklama",
+        code: "SAHA-N02",
+        category: "Saha Görevi / EL Test",
+        targetUnit: "Bakım & Mühendislik",
+        requiresFloor: true,
+        miniGame: "conveyor",
+        operatorQuestion: "SAHA GÖREVİ (HAT-03): EL taramasında kusurlu modüller sahada banttan ayrılmalı.",
+        rootCause: "Lehim temas noktası ve hücre stres yoğunluğu",
+        d8Options: [
+          "Sahada kusurlu modüller ayrıldı ve EL/vakum kontrolü onaylandı",
+          "Vakum pompası kapatıldı",
+          "Hat durduruldu"
+        ]
+      }
+    ]
+  }
+];
+
+const DOWNTIME_CODES = [
+  { code: "DT-01", label: "Hat / Kalıp / Ürün Ayıklama" },
+  { code: "DT-02", label: "Kalite / Reçete / Tolerans Sapması" },
+  { code: "DT-03", label: "Sıcaklık / Basınç / Vakum Dengesi" },
+  { code: "DT-04", label: "Sensör / Okuyucu / PLC Arızası" },
+  { code: "DT-05", label: "MES Lot & Barkod Doğrulama" },
+  { code: "DT-06", label: "Hammadde Besleme / Tıkanıklık" },
+  { code: "DT-07", label: "Pnömatik / Basınçlı Hava Kaybı" },
+  { code: "DT-08", label: "Tork / Sıkma / Parametre Sapması" },
+  { code: "DT-09", label: "İSG / Güvenlik Müdahalesi" },
+  { code: "DT-10", label: "Paketleme / Hat Sonu Duruşu" }
+];
+
+const DISPATCH_UNITS = [
+  { id: "BAKIM", name: "Bakım & Mühendislik", focus: "Rulman, vakum, basınç, takım, önleyici ve kestirimci bakım", code: "YÖN-BAK" },
+  { id: "KALITE", name: "Kalite Güvence & 8D", focus: "Lot/barkod uygunluğu, numune, fire ve 8D kök neden", code: "YÖN-KAL" },
+  { id: "ENERJI", name: "Enerji & Tesis Altyapısı", focus: "Pik kW dengeleme, ısı/vakum verimliliği, kompresör, basınçlı hava", code: "YÖN-ENR" },
+  { id: "PLANLAMA", name: "Üretim Planlama (MRP)", focus: "İş emri önceliği, lot geçişi ve vardiya akışı", code: "YÖN-PLN" },
+  { id: "LAB", name: "Kalite Güvence & Laboratuvar", focus: "Numune analizi, spesifikasyon sapması, parti serbest bırakma", code: "YÖN-LAB" },
+  { id: "PLC", name: "Otomasyon & PLC", focus: "Sensör, okuyucu, PLC/HMI parametresi, servo ve haberleşme", code: "YÖN-PLC" },
+  { id: "KALIP", name: "Kalıp & Mekanik Bakım", focus: "Kalıp, sıkma/tork ünitesi, mekanik ayar ve kalibrasyon", code: "YÖN-KLP" },
+  { id: "LOJ", name: "Lojistik & Hammadde Besleme", focus: "Silo/huni beslemesi, palet, hammadde ikmali ve tıkanıklık", code: "YÖN-LOJ" },
+  { id: "PAKET", name: "Paketleme & Hat Sonu", focus: "Kutulama, paletleme, etiket/koli akışı ve hat sonu duruşları", code: "YÖN-PKT" },
+  { id: "ISG", name: "İSG (İş Sağlığı ve Güvenliği)", focus: "Işık perdesi, koruyucu kapı, acil durum, güvenli çalışma", code: "YÖN-ISG" }
+];
+
+const UNIT_NOTES = {
+  LAB: "Laboratuvar numuneyi analiz etti ve parti serbest bırakma kararını işledi.",
+  PLC: "Otomasyon mühendisi PLC/HMI parametrelerini ve sensör ayarlarını doğruladı.",
+  KALIP: "Mekanik bakım ekibi tork/sıkma ünitesini ayarlayıp kalibre etti.",
+  LOJ: "Lojistik ekibi besleme hattını açıp hammadde akışını yeniden başlattı.",
+  PAKET: "Hat sonu ekibi paketleme ünitesindeki sıkışmayı giderip akışı başlattı.",
+  ISG: "İSG uzmanı güvenlik donanımını kontrol edip sahayı yeniden devreye aldı."
+};
+const unitName = id => (DISPATCH_UNITS.find(x => x.id === id) || {}).name;
+
+function buildExtraScenarios(sec) {
+  const mk = (id, li, code, title, category, floor, game, units, codes, q, root, d8) => {
+    const line = sec.lines[li];
+    return {
+      id: "x_" + id, lineId: line.id, title, code, category,
+      targetUnit: units.map(unitName).join(" veya "),
+      requiresFloor: floor, miniGame: game, unitIds: units, expectedCodes: codes,
+      operatorQuestion: q.replace("{L}", line.id).replace("{U}", sec.unit),
+      rootCause: root, d8Options: d8
+    };
+  };
+  return [
+    mk("vision", 2, "SAHA-X01", "Saha Görevi: Vision/Kamera Reddi · Hatalı Ürün Ayıklama", "Saha Görevi / Kalite", true, "conveyor", ["KALITE", "LAB"], ["DT-01", "DT-02"],
+      "SAHA GÖREVİ ({L}): Kamera (vision) sistemi hatalı dolum/etiketleme tespit edip {U} reddediyor; reddedilenleri sahada ayıklayın.",
+      "Vision aydınlatma kayması ve ret eşiği sapması",
+      ["Reddedilen ürünler ayrıldı, vision aydınlatması ve ret eşiği doğrulandı", "Vision sistemi bypass edildi", "Ret eşiği sınırsız yükseltildi"]),
+    mk("sensor", 1, "SAHA-X02", "Saha Görevi: Konveyör Sensörü Körlenmesi", "Saha Görevi / Otomasyon", true, "sensor", ["PLC", "BAKIM"], ["DT-04"],
+      "SAHA GÖREVİ ({L}): Konveyör fotoselinde kirlenme nedeniyle körlenme var, ürün algılanmıyor. Sensör merceğini sahada temizleyin.",
+      "Fotosel lensinde kirlenme ve algılama eşiği sapması",
+      ["Sensör lensi temizlendi ve algılama eşiği PLC'de doğrulandı", "Sensör sinyali PLC'de zorlandı (force)", "Konveyör emniyet kilidi atlandı"]),
+    mk("torque", 1, "MES-X03", "Tork / Sıkma Değeri Sapması", "Proses Sapması", false, "balance", ["KALIP", "PLC"], ["DT-08", "DT-02"],
+      "{L}: Sıkma/tork değeri tolerans bandının dışına çıktı. Mekanik ayar veya servo parametresi kaynaklı olabilir.",
+      "Tork ünitesi kalibrasyon kayması ve servo parametre sapması",
+      ["Tork ünitesi kalibre edildi ve servo parametreleri sabitlendi", "Tork alarm limiti genişletildi", "Sıkma istasyonu devre dışı bırakıldı"]),
+    mk("feed", 0, "SAHA-X04", "Saha Görevi: Hammadde Besleme Tıkanıklığı", "Saha Görevi / Lojistik", true, "balance", ["LOJ", "BAKIM"], ["DT-06"],
+      "SAHA GÖREVİ ({L}): Besleme hunisinde köprüleşme ve silo çıkışında tıkanıklık var. Akışı dengeleyin.",
+      "Huni köprüleşmesi ve silo çıkış tıkanıklığı",
+      ["Besleme hattı açıldı, titreşimli huni ayarı ve ikmal planı güncellendi", "Besleme valfi kapatıldı", "Silo seviye sensörü devre dışı bırakıldı"]),
+    mk("reader", 2, "MES-X05", "Barkod / Lot Okuyucu Hatası", "MES İzlenebilirlik", false, "balance", ["PLC", "KALITE"], ["DT-04", "DT-05"],
+      "{L}: Barkod/lot okuyucu okuma hatası veriyor; lot izlenebilirliği kesilme riski taşıyor.",
+      "Okuyucu odak/kontrast ayarı ve MES haberleşme zaman aşımı",
+      ["Okuyucu ayarı ve MES haberleşmesi doğrulandı, lot kaydı tamamlandı", "Lot kontrolü kapatıldı", "Okuyucu hatası yok sayıldı"]),
+    mk("pneu", 0, "SAHA-X06", "Saha Görevi: Pnömatik Basınç Düşüşü", "Saha Görevi / Utilities", true, "balance", ["ENERJI", "BAKIM"], ["DT-07", "DT-03"],
+      "SAHA GÖREVİ ({L}): Pnömatik hat basıncı düşüyor; silindirler yavaş çalışıyor. Basıncı güvenli aralığa getirin.",
+      "Kompresör yükü ve hat kaçağı nedeniyle basınç düşüşü",
+      ["Kaçak giderildi, kompresör ve regülatör ayarı doğrulandı", "Basınç alarm limiti düşürüldü", "Pnömatik hat izole edilip bırakıldı"]),
+    mk("pack", 2, "MES-X07", "Hat Sonu Paketleme Duruşu", "Paketleme", false, "balance", ["PAKET"], ["DT-10"],
+      "{L}: Hat sonu paketleme ünitesi dolu/sıkışık; {U} birikmesi başladı.",
+      "Koli besleme sıkışması ve palet istasyonu dolu",
+      ["Hat sonu sıkışması giderildi ve palet akışı yeniden başlatıldı", "Paketleme hattı kapatıldı", "Üretim hızı kontrolsüz artırıldı"]),
+    mk("isg", 1, "MES-X08", "Işık Perdesi / Koruyucu Kapı İSG Alarmı", "İSG", false, "balance", ["ISG", "PLC"], ["DT-09"],
+      "{L}: Işık perdesi ve koruyucu kapı güvenlik alarmı verdi; hat güvenli duruşta bekliyor.",
+      "Işık perdesi hizası ve kapı anahtarı temassızlığı",
+      ["Güvenlik donanımı kontrol edildi, hiza düzeltildi ve alarm onayla sıfırlandı", "Güvenlik devresi köprülendi", "Alarm sessize alındı"]),
+    mk("lab", 0, "MES-X09", "Laboratuvar Numune Uygunsuzluğu · Parti Bekletme", "Kalite / Laboratuvar", false, "balance", ["LAB", "KALITE"], ["DT-02", "DT-05"],
+      "{L}: Laboratuvar numunesi spesifikasyon dışı çıktı; ilgili parti bekletmeye alınmalı.",
+      "Reçete oranı sapması ve numune ölçüm uygunsuzluğu",
+      ["Parti bekletmeye alındı, numune tekrar analiz edilip reçete düzeltildi", "Parti kontrolsüz serbest bırakıldı", "Numune sonucu silindi"])
+  ];
+}
+
+const SAVE_KEY = "mes_career_sim_v10_save";
+const KAIZEN_KEY = "mes_kaizen_proposals_v10";
+
+function getDefaultState() {
+  return {
+    day: 1,
+    operatorName: "",
+    gender: "male",
+    sectorId: "icecek",
+    clockMinutes: 480,
+    speed: 1,
+    oeeBonus: 0,
+    meetingStep: 0,
+    meetingDoneToday: false,
+    mandatoryMeetingTriggered: false,
+    lines: [],
+    activeFault: null,
+    pending8D: null,
+    completed8DList: [],
+    downtimeLogs: [],
+    maintenanceLogs: [],
+    dispatchLogs: [],
+    chatMessages: [],
+    eventLogs: [],
+    oeeHistory: [],
+    kwHistory: [],
+    orderStatus: {},
+    verifiedLots: [],
+    approvedRecipes: [],
+    shiftHandoverNote: "",
+    totalProduced: 0,
+    totalScrap: 0,
+    totalKwh: 0,
+    correctCodes: 0,
+    wrongCodes: 0,
+    resolvedFaults: 0
+  };
+}
+
+let state = getDefaultState();
+let activeRadioFault = null;
+let radioOpen = false;
+let currentLaptopTab = "live";
+let currentFloorLineId = "HAT-01";
+let clockInterval = null;
+let miniGameLoop = null;
+let sensorCleanPct = 0;
+let sensorDrawing = false;
+let prodAccumulator = {};
+let energyAccumulator = 0;
+
+function loadSavedCareer() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function saveCareerToStorage(advanceDay = false) {
+  const payload = {
+    day: advanceDay ? state.day + 1 : state.day,
+    operatorName: state.operatorName,
+    gender: state.gender,
+    sectorId: state.sectorId,
+    completed8DList: state.completed8DList
+  };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(payload));
+}
+
+function getCurrentSector() {
+  return SECTORS.find(s => s.id === state.sectorId) || SECTORS[0];
+}
+
+function getSectorLogoSrc(sector) {
+  return GAME_ASSETS[sector.logoKey] || makeSectorSvg(sector.shortCode, sector.accent);
+}
+
+function formatClock(mins) {
+  const clamped = Math.max(480, Math.min(960, Math.floor(mins)));
+  const h = Math.floor(clamped / 60);
+  const m = clamped % 60;
+  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+}
+
+function addEventLog(type, text) {
+  state.eventLogs.unshift({
+    time: formatClock(state.clockMinutes),
+    type,
+    text
+  });
+  if (state.eventLogs.length > 100) state.eventLogs.pop();
+}
+
+function getAverageOee() {
+  if (!state.lines.length) return 88.0;
+  return state.lines.reduce((acc, l) => acc + l.oee, 0) / state.lines.length;
+}
+
+function getOeeBreakdown() {
+  const avgOee = getAverageOee();
+  const availability = Math.min(99.2, Number((avgOee + 3.2).toFixed(1)));
+  const performance = Math.min(99.0, Number((avgOee + 1.4).toFixed(1)));
+  const scrapRate = state.totalProduced > 0 ? (state.totalScrap / state.totalProduced) * 100 : 0.4;
+  const quality = Math.max(85.0, Number((100 - scrapRate * 1.4).toFixed(1)));
+  return { availability, performance, quality };
+}
+
+function getTotalActiveKw() {
+  return state.lines.reduce((sum, l) => {
+    const loadRatio = l.status === "OK" ? 1.0 : l.status === "MES" ? 0.78 : 0.52;
+    return sum + (l.kw * loadRatio);
+  }, 0);
+}
+
+function refreshOperatorCard() {
+  const sec = getCurrentSector();
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  set("menu-day-badge", `GÜN ${state.day}`);
+  set("menu-sicil", `MES-2026-0${14 + (state.day - 1)}`);
+  set("menu-plant", sec.plantCode);
+  const ni = document.getElementById("input-op-name");
+  if (ni && !ni.value && state.operatorName && !/^MES-2026/.test(state.operatorName)) ni.value = state.operatorName;
+  set("menu-stat-day", `GÜN ${state.day}`);
+  set("menu-stat-sector", sec.name);
+  set("menu-stat-8d", String(state.completed8DList.length));
+  set("menu-stat-kaizen", String(loadKaizenList().length));
+}
+
+function renderSectorCards() {
+  const grid = document.getElementById("sector-grid");
+  grid.innerHTML = "";
+  SECTORS.forEach(sec => {
+    const card = document.createElement("div");
+    card.className = "sector-card" + (sec.id === state.sectorId ? " selected" : "");
+    const lineNames = sec.lines.map(l => l.name).join(" · ");
+    const fallbackLogo = makeSectorSvg(sec.shortCode, sec.accent);
+    const chosenLogo = GAME_ASSETS[sec.logoKey] || fallbackLogo;
+
+    card.innerHTML = `
+      <div class="sector-card-head">
+        <div class="sector-logo-box"><img alt="${sec.name}"></div>
+        <div>
+          <div class="sector-name">${sec.name}</div>
+          <div class="sector-plant">${sec.plantCode}</div>
+        </div>
+      </div>
+      <div class="sector-lines"><strong>Hatlar:</strong> ${lineNames} · <strong>Birim:</strong> ${sec.unit}</div>
+    `;
+    bindImageWithFallback(card.querySelector("img"), chosenLogo, fallbackLogo);
+    card.addEventListener("click", () => {
+      state.sectorId = sec.id;
+      document.getElementById("selected-sector-label").textContent = sec.name;
+      document.getElementById("menu-stat-sector").textContent = sec.name;
+      refreshOperatorCard();
+      renderSectorCards();
+    });
+    grid.appendChild(card);
+  });
+}
+
+function initMenu() {
+  const saved = loadSavedCareer();
+  const contBtn = document.getElementById("btn-continue-career");
+  if (saved) {
+    state.day = saved.day || 1;
+    state.operatorName = saved.operatorName || "";
+    state.gender = saved.gender || "male";
+    state.sectorId = saved.sectorId || "icecek";
+    state.completed8DList = saved.completed8DList || [];
+
+    contBtn.style.display = "inline-flex";
+    contBtn.textContent = `Kayıttan Devam Et (Gün ${state.day})`;
+  } else {
+    contBtn.style.display = "none";
+  }
+
+  document.getElementById("selected-sector-label").textContent = getCurrentSector().name;
+  refreshOperatorCard();
+  renderSectorCards();
+}
+
+function startShift(sectorOverrideId = null) {
+  const nv = (document.getElementById("input-op-name") || { value: "" }).value.replace(/[<>&"]/g, "").trim();
+  state.operatorName = nv || `MES-2026-0${14 + (state.day - 1)}`;
+  if (sectorOverrideId) state.sectorId = sectorOverrideId;
+
+  const sector = getCurrentSector();
+  const floorBgPath = getSectorFloorImage(sector);
+
+  state.clockMinutes = 480;
+  state.speed = 1;
+  state.oeeBonus = 0;
+  state.meetingStep = 0;
+  state.meetingDoneToday = false;
+  state.mandatoryMeetingTriggered = false;
+  state.activeFault = null;
+  state.pending8D = null;
+  state.downtimeLogs = [];
+  state.maintenanceLogs = [];
+  state.dispatchLogs = [];
+  state.eventLogs = [];
+  state.orderStatus = {};
+  state.verifiedLots = [];
+  state.approvedRecipes = [];
+  state.shiftHandoverNote = "";
+  state.totalProduced = 0;
+  state.totalScrap = 0;
+  state.totalKwh = 0;
+  state.correctCodes = 0;
+  state.wrongCodes = 0;
+  state.resolvedFaults = 0;
+  prodAccumulator = {};
+  energyAccumulator = 0;
+
+  sector.orders.forEach((o, idx) => {
+    state.orderStatus[o.code] = idx === 0 ? "Çalışıyor" : "Beklemede";
+  });
+
+  state.lines = sector.lines.map(l => {
+    prodAccumulator[l.id] = 0;
+    return {
+      ...l,
+      status: "OK",
+      produced: 0,
+      scrap: 0,
+      currentRate: l.rate,
+      operatorNote: ""
+    };
+  });
+
+  const initOee = Number(getAverageOee().toFixed(1));
+  const initKw = Number(getTotalActiveKw().toFixed(1));
+  state.oeeHistory = [{ label: "08:00", val: initOee }];
+  state.kwHistory = [{ label: "08:00", val: initKw }];
+
+  state.chatMessages = [
+    {
+      time: "08:00",
+      sender: sector.supervisor,
+      role: "Amir",
+      text: `Günaydın ${state.operatorName}. ${sector.name} tesisinde vardiya başladı. Üretim hızında düşüş veya sapma görürsen hat operatörüne ya da bana sorabilirsin.`
+    },
+    {
+      time: "08:00",
+      sender: `${state.lines[1].operator} (${state.lines[1].id})`,
+      role: "Hat Operatörü",
+      text: `${state.lines[1].station} istasyonundayım. Anlık veriler MES'e akıyor.`
+    }
+  ];
+
+  activeRadioFault = null;
+  radioOpen = false;
+  updateRadioBadge();
+  document.getElementById("radio-drawer").classList.remove("open");
+
+  const laptopBgEl = document.getElementById("laptop-bg-photo");
+  if (laptopBgEl) laptopBgEl.style.backgroundImage = `url("${GAME_ASSETS.laptop_arka_plan}")`;
+  applyBackgroundImageWithFallback(laptopBgEl, GAME_ASSETS.laptop_arka_plan, GAME_ASSETS.ofis_masasi);
+  applyBackgroundImageWithFallback(document.getElementById("meeting-bg-photo"), GAME_ASSETS.toplanti_odasi);
+  applyBackgroundImageWithFallback(document.getElementById("scene-floor"), floorBgPath, GAME_ASSETS.saha_genel);
+
+  const sectorLogo = getSectorLogoSrc(sector);
+  const fallbackLogo = makeSectorSvg(sector.shortCode, sector.accent);
+  bindImageWithFallback(document.getElementById("top-sector-logo"), sectorLogo, fallbackLogo);
+  document.getElementById("top-sector-name").textContent = sector.name;
+  document.getElementById("top-day-label").textContent = `GÜN ${state.day}`;
+  document.getElementById("top-operator-name").textContent = `${state.operatorName} · ${sector.lines.length} Hat Aktif`;
+
+  addEventLog("INFO", `Gün ${state.day} vardiyası masaüstünde başladı (${sector.name}).`);
+
+  currentLaptopTab = "live";
+  document.getElementById("menu-screen").classList.remove("active");
+  document.getElementById("sim-screen").classList.add("active");
+  switchScene("laptop");
+  setSpeed(1);
+  startClockLoop();
+}
+
+function setSpeed(spd) {
+  state.speed = spd;
+  document.querySelectorAll(".speed-btn").forEach(btn => {
+    btn.classList.toggle("active", Number(btn.dataset.speed) === spd);
+  });
+}
+
+function startClockLoop() {
+  if (clockInterval) clearInterval(clockInterval);
+  clockInterval = setInterval(() => {
+    if (state.speed === 0) return;
+    if (document.getElementById("meeting-overlay").classList.contains("active")) return;
+
+    state.clockMinutes += 1 * state.speed;
+    if (state.clockMinutes >= 960) {
+      state.clockMinutes = 960;
+      const clockText = formatClock(state.clockMinutes);
+      document.getElementById("sim-clock").textContent = clockText;
+      const trayClock = document.getElementById("win-tray-clock");
+      if (trayClock) trayClock.textContent = clockText;
+      finishShift();
+      return;
+    }
+
+    const clockText = formatClock(state.clockMinutes);
+    document.getElementById("sim-clock").textContent = clockText;
+    const trayClock = document.getElementById("win-tray-clock");
+    if (trayClock) trayClock.textContent = clockText;
+
+    advanceProductionTick();
+    maybeTriggerScenario();
+    maybeSummonMandatoryMeeting();
+
+    if (document.getElementById("scene-laptop").classList.contains("active")) {
+      renderLaptopContent();
+    }
+  }, 1000);
+}
+
+function advanceProductionTick() {
+  state.lines.forEach(line => {
+    if (prodAccumulator[line.id] === undefined) prodAccumulator[line.id] = 0;
+
+    if (line.status === "OK") {
+      const stepUnits = (line.currentRate / 3) * state.speed;
+      prodAccumulator[line.id] += stepUnits;
+      const wholeGain = Math.floor(prodAccumulator[line.id]);
+      if (wholeGain > 0) {
+        prodAccumulator[line.id] -= wholeGain;
+        line.produced += wholeGain;
+        state.totalProduced += wholeGain;
+      }
+
+      if (Math.random() < (line.oee < 84 ? 0.03 : 0.012)) {
+        line.scrap += 1;
+        state.totalScrap += 1;
+      }
+
+      line.health = Math.max(55, Number((line.health - 0.04 * state.speed).toFixed(1)));
+      const targetOee = Math.min(98.5, line.oee + state.oeeBonus);
+      line.oee = Number((line.oee + (targetOee - line.oee) * 0.06).toFixed(1));
+    } else if (line.status === "MES") {
+      prodAccumulator[line.id] += (line.currentRate * 0.15) * state.speed;
+      const wholeGain = Math.floor(prodAccumulator[line.id]);
+      if (wholeGain > 0) {
+        prodAccumulator[line.id] -= wholeGain;
+        line.produced += wholeGain;
+        state.totalProduced += wholeGain;
+      }
+      line.oee = Number(Math.max(72, line.oee - 0.1).toFixed(1));
+    } else {
+      line.oee = Number(Math.max(65, line.oee - 0.15).toFixed(1));
+    }
+  });
+
+  const activeKw = getTotalActiveKw();
+  energyAccumulator += (activeKw / 60) * state.speed;
+  state.totalKwh = Number(energyAccumulator.toFixed(2));
+
+  if (state.clockMinutes % 3 === 0) {
+    const tLabel = formatClock(state.clockMinutes);
+    state.oeeHistory.push({ label: tLabel, val: Number(getAverageOee().toFixed(1)) });
+    state.kwHistory.push({ label: tLabel, val: Number(activeKw.toFixed(1)) });
+    if (state.oeeHistory.length > 24) state.oeeHistory.shift();
+    if (state.kwHistory.length > 24) state.kwHistory.shift();
+  }
+}
+
+function maybeTriggerScenario() {
+  if (state.activeFault) return;
+  if (state.clockMinutes < 485) return;
+
+  const triggerProb = 0.03 * state.speed;
+  if (Math.random() > triggerProb) return;
+
+  const sector = getCurrentSector();
+  const allSc = sector.scenarios.concat(buildExtraScenarios(sector));
+  const candidates = allSc.filter(sc => !state.completed8DList.includes(`${sector.id}:${sc.id}`));
+  const pool = candidates.length ? candidates : allSc;
+
+  const floorPool = pool.filter(s => s.requiresFloor);
+  const pick = (state.resolvedFaults % 2 === 1 && floorPool.length > 0)
+    ? floorPool[Math.floor(Math.random() * floorPool.length)]
+    : pool[Math.floor(Math.random() * pool.length)];
+
+  const targetLine = state.lines.find(l => l.id === pick.lineId) || state.lines[0];
+  const isFloorEvent = Boolean(pick.requiresFloor);
+
+  targetLine.status = isFloorEvent ? "FAULT" : "MES";
+  targetLine.currentRate = isFloorEvent
+    ? Math.max(1, Math.round(targetLine.rate * 0.5))
+    : Math.max(1, Math.round(targetLine.rate * 0.75));
+  targetLine.operatorNote = pick.operatorQuestion;
+
+  state.activeFault = {
+    uid: `FLT-${Date.now().toString().slice(-5)}`,
+    sectorId: sector.id,
+    scenarioId: pick.id,
+    lineId: targetLine.id,
+    lineName: targetLine.name,
+    machine: targetLine.machine,
+    operator: targetLine.operator,
+    station: targetLine.station,
+    title: pick.title,
+    code: pick.code,
+    category: pick.category,
+    targetUnit: pick.targetUnit || "Bakım & Mühendislik",
+    requiresFloor: isFloorEvent,
+    miniGame: pick.miniGame,
+    operatorQuestion: pick.operatorQuestion,
+    rootCause: pick.rootCause,
+    d8Options: pick.d8Options,
+    unitIds: pick.unitIds || null,
+    expectedCodes: pick.expectedCodes || null
+  };
+
+  activeRadioFault = state.activeFault;
+  updateRadioBadge();
+  openRadioDrawer();
+  renderRadioDrawer();
+
+  state.chatMessages.unshift({
+    time: formatClock(state.clockMinutes),
+    sender: `${targetLine.operator} (${targetLine.id})`,
+    role: "Hat Operatörü",
+    text: `Dikkat! ${targetLine.station} üzerinde hız düştü (${targetLine.currentRate} ${sector.unit}/dk). Sebep: ${pick.rootCause}.`
+  });
+
+  addEventLog(isFloorEvent ? "WARN" : "INFO", `[${targetLine.id}] ${pick.title} (${pick.code}) · Birim: ${state.activeFault.targetUnit}`);
+}
+
+function maybeSummonMandatoryMeeting() {
+  if (state.mandatoryMeetingTriggered || state.meetingDoneToday) return;
+  const avgOee = getAverageOee();
+  if (state.clockMinutes >= 505 && (avgOee < 86.5 || state.resolvedFaults >= 1)) {
+    state.mandatoryMeetingTriggered = true;
+    openMeetingRoom(true);
+  }
+}
+
+function switchScene(sceneName) {
+  document.getElementById("scene-laptop").classList.toggle("active", sceneName === "laptop");
+  document.getElementById("scene-floor").classList.toggle("active", sceneName === "floor");
+
+  if (sceneName === "laptop") {
+    renderLaptopContent();
+  } else if (sceneName === "floor") {
+    const sector = getCurrentSector();
+    applyBackgroundImageWithFallback(document.getElementById("scene-floor"), getSectorFloorImage(sector), GAME_ASSETS.saha_genel);
+    if (state.activeFault && state.activeFault.requiresFloor) {
+      currentFloorLineId = state.activeFault.lineId;
+    }
+    renderFloorScene();
+  }
+}
+
+function updateRadioBadge() {
+  const badge = document.getElementById("radio-count-badge");
+  const count = activeRadioFault ? 1 : 0;
+  badge.textContent = String(count);
+  badge.classList.toggle("empty", count === 0);
+}
+
+function openRadioDrawer() {
+  radioOpen = true;
+  document.getElementById("radio-drawer").classList.add("open");
+}
+
+function closeRadioDrawer() {
+  radioOpen = false;
+  document.getElementById("radio-drawer").classList.remove("open");
+}
+
+function acknowledgeAndCloseRadio() {
+  activeRadioFault = null;
+  updateRadioBadge();
+  closeRadioDrawer();
+}
+
+function renderRadioDrawer() {
+  const body = document.getElementById("radio-body");
+  const codeEl = document.getElementById("radio-msg-code");
+
+  if (!activeRadioFault) {
+    codeEl.textContent = "BEKLEMEDE";
+    body.innerHTML = `<p class="text-muted">Okunmamış telsiz çağrısı bulunmuyor.</p>`;
+    return;
+  }
+
+  const f = activeRadioFault;
+  codeEl.textContent = `${f.lineId} · ${f.code}`;
+
+  body.innerHTML = `
+    <div>
+      <div style="font-size:14px;font-weight:700;">${f.title}</div>
+      <div class="text-muted" style="margin-top:4px;line-height:1.45;">${f.operatorQuestion}</div>
+      <div class="text-muted" style="margin-top:4px;color:var(--accent-teal);">İlgili Birim: ${f.targetUnit}</div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:7px;">
+      <button id="radio-act-crew" class="btn btn-sm">Operatör & Amirle Görüş</button>
+      <button id="radio-act-dispatch" class="btn btn-primary btn-sm">İlgili Birime Yönlendir</button>
+      ${f.requiresFloor
+        ? `<button id="radio-act-floor" class="btn btn-warning btn-sm">Sahaya İn (${f.lineId})</button>`
+        : `<button id="radio-act-mes-resolve" class="btn btn-success btn-sm">MES Teyidi ile Kapat</button>`
+      }
+      <button id="radio-act-ack" class="btn btn-sm">Bildirimi Kapat</button>
+    </div>
+  `;
+
+  document.getElementById("radio-act-crew").addEventListener("click", () => {
+    currentLaptopTab = "crew";
+    acknowledgeAndCloseRadio();
+    switchScene("laptop");
+  });
+
+  document.getElementById("radio-act-dispatch").addEventListener("click", () => {
+    currentLaptopTab = "dispatch";
+    acknowledgeAndCloseRadio();
+    switchScene("laptop");
+  });
+
+  const floorBtn = document.getElementById("radio-act-floor");
+  if (floorBtn) {
+    floorBtn.addEventListener("click", () => {
+      currentFloorLineId = f.lineId;
+      acknowledgeAndCloseRadio();
+      switchScene("floor");
+    });
+  }
+
+  const mesResolveBtn = document.getElementById("radio-act-mes-resolve");
+  if (mesResolveBtn) {
+    mesResolveBtn.addEventListener("click", () => {
+      resolveMesEvent(f);
+      acknowledgeAndCloseRadio();
+    });
+  }
+
+  document.getElementById("radio-act-ack").addEventListener("click", () => {
+    acknowledgeAndCloseRadio();
+  });
+}
+
+function resolveMesEvent(fault) {
+  if (!fault) return;
+  const line = state.lines.find(l => l.id === fault.lineId);
+  if (line) {
+    line.status = "OK";
+    line.currentRate = line.rate;
+    line.operatorNote = "";
+    line.oee = Number(Math.min(98.5, line.oee + 0.6).toFixed(1));
+  }
+  state.resolvedFaults += 1;
+  state.activeFault = null;
+  activeRadioFault = null;
+  updateRadioBadge();
+  addEventLog("OK", `[${fault.lineId}] ${fault.title} çözüldü ve hat tam hızına döndü.`);
+  if (document.getElementById("scene-laptop").classList.contains("active")) {
+    renderLaptopContent();
+  }
+}
+
+function updateStatusBar() {
+  const set = (id, v) => { const e = document.getElementById(id); if (e) e.textContent = v; };
+  set("sb-oee", `OEE %${getAverageOee().toFixed(1)}`);
+  set("sb-kw", `${getTotalActiveKw().toFixed(1)} kW`);
+  const crit = state.lines.some(l => l.status === "FAULT");
+  const warn = state.lines.some(l => l.status !== "OK");
+  const st = document.getElementById("sb-state");
+  if (st) { st.className = "sb-state " + (crit ? "crit" : warn ? "warn" : "ok"); st.textContent = crit ? "KRİTİK DURUŞ" : warn ? "UYARI" : "STABİL"; }
+  const ln = document.getElementById("sb-lines");
+  if (ln) ln.innerHTML = state.lines.map(l => `<span class="sb-line ${l.status === "OK" ? "ok" : l.status === "MES" ? "warn" : "crit"}">${l.id}</span>`).join("");
+}
+
+/* ==================== CHARTS ==================== */
+function drawLineChart(canvasId, series, strokeColor, unitSuffix) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext("2d");
+  const w = canvas.width = canvas.clientWidth || 440;
+  const h = canvas.height = canvas.clientHeight || 150;
+
+  ctx.clearRect(0, 0, w, h);
+  ctx.fillStyle = "#1f2124";
+  ctx.fillRect(0, 0, w, h);
+
+  if (!series || series.length < 2) {
+    ctx.fillStyle = "#868b92";
+    ctx.font = "12px 'IBM Plex Mono', monospace";
+    ctx.fillText("Veri toplanıyor...", 16, h / 2);
+    return;
+  }
+
+  const vals = series.map(s => s.val);
+  let minV = Math.min(...vals);
+  let maxV = Math.max(...vals);
+  if (Math.abs(maxV - minV) < 1) {
+    minV = Math.max(0, minV - 2);
+    maxV = maxV + 2;
+  } else {
+    const pad = (maxV - minV) * 0.15;
+    minV = Math.max(0, minV - pad);
+    maxV = maxV + pad;
+  }
+
+  const leftPad = 44;
+  const rightPad = 14;
+  const topPad = 14;
+  const bottomPad = 24;
+  const plotW = w - leftPad - rightPad;
+  const plotH = h - topPad - bottomPad;
+
+  ctx.strokeStyle = "#363b41";
+  ctx.lineWidth = 1;
+  for (let g = 0; g <= 3; g++) {
+    const gy = topPad + (plotH / 3) * g;
+    ctx.beginPath();
+    ctx.moveTo(leftPad, gy);
+    ctx.lineTo(w - rightPad, gy);
+    ctx.stroke();
+
+    const gVal = (maxV - ((maxV - minV) / 3) * g).toFixed(1);
+    ctx.fillStyle = "#868b92";
+    ctx.font = "10px 'IBM Plex Mono', monospace";
+    ctx.textAlign = "right";
+    ctx.fillText(gVal, leftPad - 6, gy + 3);
+  }
+
+  ctx.strokeStyle = strokeColor;
+  ctx.lineWidth = 2.2;
+  ctx.beginPath();
+  series.forEach((pt, idx) => {
+    const x = leftPad + (idx / (series.length - 1)) * plotW;
+    const y = topPad + (1 - (pt.val - minV) / (maxV - minV)) * plotH;
+    if (idx === 0) ctx.moveTo(x, y);
+    else ctx.lineTo(x, y);
+  });
+  ctx.stroke();
+
+  ctx.lineTo(leftPad + plotW, topPad + plotH);
+  ctx.lineTo(leftPad, topPad + plotH);
+  ctx.closePath();
+  ctx.fillStyle = strokeColor + "22";
+  ctx.fill();
+
+  ctx.fillStyle = "#aeb2b7";
+  ctx.font = "10px 'IBM Plex Mono', monospace";
+  ctx.textAlign = "left";
+  ctx.fillText(series[0].label, leftPad, h - 7);
+  ctx.textAlign = "right";
+  const lastPt = series[series.length - 1];
+  ctx.fillText(`${lastPt.label} (${lastPt.val.toFixed(1)}${unitSuffix})`, w - rightPad, h - 7);
+}
+
+/* ==================== DESKTOP MES WORKSPACE ==================== */
+function renderLaptopContent() {
+  document.querySelectorAll(".mes-tab-btn").forEach(btn => {
+    btn.classList.toggle("active", btn.dataset.tab === currentLaptopTab);
+  });
+
+  const host = document.getElementById("mes-tab-content");
+  const sector = getCurrentSector();
+  const sectorLogo = getSectorLogoSrc(sector);
+  const fallbackLogo = makeSectorSvg(sector.shortCode, sector.accent);
+  const avgOee = getAverageOee();
+  const oeeParts = getOeeBreakdown();
+  const activeKw = getTotalActiveKw();
+  const scrapPct = state.totalProduced > 0 ? ((state.totalScrap / state.totalProduced) * 100).toFixed(2) : "0.00";
+
+  const footerLogo = document.getElementById("mes-footer-logo");
+  const footerName = document.getElementById("mes-footer-sector-name");
+  const trayClock = document.getElementById("win-tray-clock");
+  if (footerLogo) bindImageWithFallback(footerLogo, sectorLogo, fallbackLogo);
+  if (footerName) footerName.textContent = `${sector.name} · ${sector.plantCode}`;
+  if (trayClock) trayClock.textContent = formatClock(state.clockMinutes);
+  updateStatusBar();
+
+  let bannerClass = "mes-status-banner";
+  let bannerTitle = "SİSTEM AKTİF";
+  let bannerText = `Birim: ${sector.unit} · K %${oeeParts.availability} · P %${oeeParts.performance} · Klt %${oeeParts.quality} · Amir: ${sector.supervisor}`;
+  let bannerAction = `<button class="btn btn-sm" onclick="currentLaptopTab='crew';renderLaptopContent();">Ekip & Amir</button>`;
+
+  if (state.activeFault && state.activeFault.requiresFloor) {
+    bannerClass = "mes-status-banner crit";
+    bannerTitle = `SİSTEM AKTİF · SAHA GÖREVİ (${state.activeFault.lineId})`;
+    bannerText = `${state.activeFault.title} (${state.activeFault.code}) — İlgili birime (${state.activeFault.targetUnit}) yönlendirebilir, operatörle konuşabilir veya sahaya inebilirsiniz.`;
+    bannerAction = `<div style="display:flex;gap:7px;flex-wrap:wrap;"><button class="btn btn-sm" onclick="currentLaptopTab='crew';renderLaptopContent();">Ekibe Sor</button><button class="btn btn-sm" onclick="currentLaptopTab='dispatch';renderLaptopContent();">Birime Yönlendir</button><button class="btn btn-sm btn-danger" onclick="jumpToFloorLine('${state.activeFault.lineId}')">Sahaya İn</button></div>`;
+  } else if (state.activeFault) {
+    bannerClass = "mes-status-banner warn";
+    bannerTitle = `SİSTEM AKTİF · HIZ DÜŞÜŞÜ / TEYİT (${state.activeFault.lineId})`;
+    bannerText = state.activeFault.operatorQuestion;
+    bannerAction = `<div style="display:flex;gap:7px;flex-wrap:wrap;"><button class="btn btn-sm" onclick="currentLaptopTab='crew';renderLaptopContent();">Ekibe Sor</button><button class="btn btn-sm" onclick="currentLaptopTab='dispatch';renderLaptopContent();">Birime Yönlendir</button><button class="btn btn-sm btn-success" onclick="resolveMesEvent(state.activeFault)">Teyit Et</button></div>`;
+  }
+
+  const headerHtml = `
+    <div class="mes-header-strip">
+      <div style="display:flex;align-items:center;gap:12px;">
+        <img id="mes-header-sector-logo" class="mes-sector-logo-main" alt="${sector.name}">
+        <div>
+          <div style="font-size:14px;font-weight:800;">${sector.name} · MES Çalışma Masaüstü</div>
+          <div class="text-muted">Operatör: <strong>${state.operatorName}</strong> · Amir: <strong>${sector.supervisor}</strong></div>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+        <button class="btn btn-sm" onclick="openKaizenModal()">Kaizen</button>
+        <button class="btn btn-sm btn-warning" onclick="switchScene('floor')">Saha Görevleri</button>
+        <span class="badge badge-info">GÜN ${state.day}</span>
+        <span class="badge badge-ok">SAAT ${formatClock(state.clockMinutes)}</span>
+      </div>
+    </div>
+
+    <div class="${bannerClass}">
+      <div>
+        <strong style="font-size:13px;">${bannerTitle}</strong>
+        <div class="text-muted" style="margin-top:2px;">${bannerText}</div>
+      </div>
+      ${bannerAction}
+    </div>
+
+    <div class="mes-kpi-row">
+      <div class="mes-kpi-card">
+        <div class="mes-kpi-label">Genel OEE</div>
+        <div class="mes-kpi-val" style="color:${avgOee >= 85 ? "var(--accent-emerald)" : "var(--accent-amber)"};">%${avgOee.toFixed(1)}</div>
+      </div>
+      <div class="mes-kpi-card">
+        <div class="mes-kpi-label">Toplam Üretim</div>
+        <div class="mes-kpi-val mono">${state.totalProduced} <span style="font-size:11.5px;color:var(--text-secondary);">${sector.unit}</span></div>
+      </div>
+      <div class="mes-kpi-card">
+        <div class="mes-kpi-label">Fire / Ayıklanan</div>
+        <div class="mes-kpi-val mono" style="color:var(--accent-rose);">${state.totalScrap} <span style="font-size:11.5px;">(%${scrapPct})</span></div>
+      </div>
+      <div class="mes-kpi-card">
+        <div class="mes-kpi-label">Anlık Güç Yükü</div>
+        <div class="mes-kpi-val mono" style="color:var(--accent-teal);">${activeKw.toFixed(1)} <span style="font-size:11.5px;color:var(--text-secondary);">kW</span></div>
+      </div>
+      <div class="mes-kpi-card">
+        <div class="mes-kpi-label">Kümülatif Enerji</div>
+        <div class="mes-kpi-val mono" style="color:var(--accent-blue);">${state.totalKwh.toFixed(2)} <span style="font-size:11.5px;color:var(--text-secondary);">kWh</span></div>
+      </div>
+    </div>
+  `;
+
+  let bodyHtml = "";
+
+  if (currentLaptopTab === "live") {
+    bodyHtml = `
+      <div class="charts-two-col">
+        <div class="chart-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong style="font-size:12.5px;">Canlı OEE Trendi (%)</strong>
+            <span class="mono" style="font-size:11px;color:var(--accent-emerald);">K:%${oeeParts.availability} · P:%${oeeParts.performance} · Klt:%${oeeParts.quality}</span>
+          </div>
+          <canvas id="chart-live-oee" class="chart-canvas"></canvas>
+        </div>
+        <div class="chart-box">
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <strong style="font-size:12.5px;">Anlık Güç Tüketim Grafiği (kW)</strong>
+            <span class="mono" style="font-size:11px;color:var(--accent-teal);">Toplam: ${activeKw.toFixed(1)} kW</span>
+          </div>
+          <canvas id="chart-live-kw" class="chart-canvas"></canvas>
+        </div>
+      </div>
+
+      <div class="line-detail-grid">
+        ${state.lines.map(l => {
+          const badge = l.status === "OK"
+            ? `<span class="badge badge-ok">AKTİF</span>`
+            : l.status === "MES"
+              ? `<span class="badge badge-warn">DÜŞÜŞ / TEYİT</span>`
+              : `<span class="badge badge-crit">SAHA GÖREVİ</span>`;
+          return `
+            <div class="line-panel">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>${l.id} · ${l.name}</strong>
+                ${badge}
+              </div>
+              <div class="text-muted">${l.station} · Op: <strong>${l.operator}</strong></div>
+              <div class="telemetry-mini-grid">
+                <div class="telemetry-cell"><span>OEE / Sağlık</span><strong>%${l.oee.toFixed(1)} · %${l.health.toFixed(0)}</strong></div>
+                <div class="telemetry-cell"><span>Hız / Çevrim</span><strong>${l.currentRate} ${sector.unit}/dk · ${l.cycleSec}</strong></div>
+                <div class="telemetry-cell"><span>Üretilen / Güç</span><strong>${l.produced} · ${l.kw.toFixed(1)} kW</strong></div>
+                <div class="telemetry-cell"><span>Sıcaklık / Basınç</span><strong>${l.temp} · ${l.pressure}</strong></div>
+                <div class="telemetry-cell"><span>Titreşim / Devir</span><strong>${l.vib} · ${l.rpm}</strong></div>
+                <div class="telemetry-cell"><span>Kestirimci Risk</span><strong style="color:var(--accent-amber);">${l.pdmRisk}</strong></div>
+              </div>
+              ${l.operatorNote ? `<div class="text-muted" style="color:var(--accent-amber);">${l.operatorNote}</div>` : ""}
+              <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                <button class="btn btn-sm" onclick="currentLaptopTab='crew';renderLaptopContent();">Op'ye Sor</button>
+                <button class="btn btn-sm" onclick="currentLaptopTab='dispatch';renderLaptopContent();">Yönlendir</button>
+                ${l.status === "MES" ? `<button class="btn btn-sm btn-success" onclick="ackLineMes('${l.id}')">Onayla</button>` : ""}
+                <button class="btn btn-sm ${l.status === "FAULT" ? "btn-danger" : ""}" onclick="jumpToFloorLine('${l.id}')">${l.status === "FAULT" ? "Sahaya İn" : "Saha"}</button>
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  } else if (currentLaptopTab === "orders") {
+    bodyHtml = `
+      <div class="line-panel">
+        <div style="font-size:14px;font-weight:700;">İş Emirleri, Atanan Operatörler & İstasyon Bazlı Detay</div>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>İş Emri</th>
+              <th>Mamul & Lot</th>
+              <th>İstasyon (Hat)</th>
+              <th>Atanan Operatör</th>
+              <th>Hedef / Çevrim</th>
+              <th>Durum & İşlem</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sector.orders.map(ord => {
+              const st = state.orderStatus[ord.code] || "Beklemede";
+              const bClass = st === "Tamamlandı" ? "badge-ok" : st === "Çalışıyor" ? "badge-info" : "badge-warn";
+              const lotOk = state.verifiedLots.includes(ord.lot);
+              return `
+                <tr>
+                  <td class="mono"><strong>${ord.code}</strong></td>
+                  <td>
+                    <div><strong>${ord.product}</strong></div>
+                    <div class="text-muted mono">${ord.lot} · ${ord.barcode} ${lotOk ? '<span style="color:#7bd3a4;">[Teyitli]</span>' : ''}</div>
+                  </td>
+                  <td>
+                    <div class="mono"><strong>${ord.lineId}</strong></div>
+                    <div class="text-muted">${ord.station}</div>
+                  </td>
+                  <td><strong>${ord.assignedOp}</strong></td>
+                  <td class="mono">
+                    <div>${ord.target} ${sector.unit}</div>
+                    <div class="text-muted">Çevrim: ${ord.cycleTime}</div>
+                  </td>
+                  <td>
+                    <div style="display:flex;align-items:center;gap:5px;flex-wrap:wrap;">
+                      <span class="badge ${bClass}">${st}</span>
+                      <button class="btn btn-sm btn-success" onclick="verifyLotAndBarcode('${ord.code}', '${ord.lot}', '${ord.barcode}')">Lot Teyit</button>
+                      <button class="btn btn-sm btn-primary" onclick="setOrderStatus('${ord.code}', 'Çalışıyor')">Başlat</button>
+                      <button class="btn btn-sm" onclick="setOrderStatus('${ord.code}', 'Tamamlandı')">Bitir</button>
+                    </div>
+                  </td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+
+        <div style="margin-top:8px;font-size:13px;font-weight:700;">İstasyon Bazlı Canlı Durum Tablosu</div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Hat</th><th>İstasyon</th><th>Operatör</th><th>Durum</th><th>Hız / Üretim</th><th>Makine Verisi</th></tr>
+          </thead>
+          <tbody>
+            ${state.lines.map(l => `
+              <tr>
+                <td class="mono"><strong>${l.id}</strong></td>
+                <td>${l.station}</td>
+                <td>${l.operator}</td>
+                <td><span class="badge ${l.status === "OK" ? "badge-ok" : l.status === "MES" ? "badge-warn" : "badge-crit"}">${l.status}</span></td>
+                <td class="mono">${l.currentRate} ${sector.unit}/dk · ${l.produced} ${sector.unit}</td>
+                <td class="mono">${l.temp} · ${l.pressure} · ${l.vib}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if (currentLaptopTab === "crew") {
+    bodyHtml = `
+      <div class="line-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">Operatör & Amir İletişimi (Sorun Analizi & Çözüm)</div>
+            <div class="text-muted">Üretim düşüşü veya sapma olduğunda hat operatörüne ya da amire nedenini sorup çözüm adımı başlatabilirsiniz.</div>
+          </div>
+          <span class="badge badge-info">${sector.supervisor}</span>
+        </div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+          ${state.lines.map(l => `
+            <button class="btn btn-sm" onclick="askCrewAboutDrop('${l.id}', 'operator')">
+              ${l.id} Op. (${l.operator}): Düşüş Nedeni Nedir?
+            </button>
+          `).join("")}
+          <button class="btn btn-sm btn-primary" onclick="askCrewAboutDrop('GENEL', 'supervisor')">
+            Amire Sor: Üretim Düşüşü & Çözüm Önerisi
+          </button>
+        </div>
+
+        <div class="chat-feed">
+          ${state.chatMessages.map(m => `
+            <div class="chat-msg ${m.role === "Sen" ? "user" : "staff"}">
+              <div style="display:flex;justify-content:space-between;font-size:11px;margin-bottom:3px;">
+                <strong>${m.sender} <span class="badge badge-info" style="padding:1px 6px;">${m.role}</span></strong>
+                <span class="mono text-muted">${m.time}</span>
+              </div>
+              <div>${m.text}</div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    `;
+  } else if (currentLaptopTab === "downtime") {
+    const f = state.activeFault;
+    bodyHtml = `
+      <div class="line-panel">
+        <div style="font-size:14px;font-weight:700;">Duruş & Sapma Kodu Girişi</div>
+        ${f ? `
+          <div style="padding:12px;border-radius:8px;background:rgba(228,87,79,0.09);border:1px solid rgba(228,87,79,0.35);">
+            <div><strong>Açık Kayıt:</strong> [${f.lineId}] ${f.title} (${f.code})</div>
+            <div class="text-muted" style="margin-top:4px;">${f.operatorQuestion}</div>
+            <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+              ${DOWNTIME_CODES.map(dc => `
+                <button class="btn btn-sm" onclick="assignDowntimeCode('${dc.code}', '${dc.label}')">${dc.code} · ${dc.label}</button>
+              `).join("")}
+            </div>
+          </div>
+        ` : `<p class="text-muted">Şu anda duruş kodu bekleyen açık olay bulunmuyor.</p>`}
+
+        <div style="margin-top:10px;font-size:13px;font-weight:700;">Duruş Kayıt Geçmişi</div>
+        <table class="data-table">
+          <thead>
+            <tr><th>Saat</th><th>Hat</th><th>Olay</th><th>Kod</th><th>Durum</th></tr>
+          </thead>
+          <tbody>
+            ${state.downtimeLogs.length ? state.downtimeLogs.map(d => `
+              <tr>
+                <td class="mono">${d.time}</td>
+                <td class="mono">${d.lineId}</td>
+                <td>${d.eventTitle}</td>
+                <td class="mono">${d.code} - ${d.label}</td>
+                <td><span class="badge ${d.correct ? "badge-ok" : "badge-warn"}">${d.correct ? "Uygun" : "Sapma"}</span></td>
+              </tr>
+            `).join("") : `<tr><td colspan="5" class="text-muted">Henüz duruş kodu kaydı yok.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if (currentLaptopTab === "maintenance") {
+    bodyHtml = `
+      <div class="line-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">Bakım Yönetimi</div>
+            <div class="text-muted">Titreşim (mm/s), kestirimci risk skoru ve ekipman sağlığına göre önleyici veya kestirimci bakım planlayın.</div>
+          </div>
+          <span class="badge badge-info">${state.maintenanceLogs.length} BAKIM KAYDI</span>
+        </div>
+
+        <div class="line-detail-grid" style="margin-top:6px;">
+          ${state.lines.map(l => `
+            <div class="param-chip" style="padding:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>${l.id} · ${l.machine}</strong>
+                <span class="badge ${l.health >= 85 ? "badge-ok" : "badge-warn"}">%${l.health.toFixed(0)}</span>
+              </div>
+              <div class="text-muted" style="margin-top:4px;">${l.station} · Op: ${l.operator}</div>
+              <div class="text-muted mono" style="margin-top:4px;">Titreşim: ${l.vib} · Devir: ${l.rpm} · PdM Risk: ${l.pdmRisk}</div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:10px;">
+                <button class="btn btn-sm btn-primary" onclick="runMaintenanceAction('${l.id}', 'Önleyici Bakım (PM)', 'Rulman yağlama, kayış gergi & filtre kontrolü', 8, 'Düşük (%12)')">Önleyici Bakım (PM)</button>
+                <button class="btn btn-sm btn-warning" onclick="runMaintenanceAction('${l.id}', 'Kestirimci Bakım (PdM)', 'FFT titreşim analizi, termal tarama & eşik ayarı', 10, 'Düşük (%8)')">Kestirimci Bakım (PdM)</button>
+              </div>
+            </div>
+          `).join("")}
+        </div>
+
+        <div style="margin-top:10px;font-size:13px;font-weight:700;">Bakım Geçmişi</div>
+        <table class="data-table">
+          <thead><tr><th>Saat</th><th>Tür</th><th>Hat / Makine</th><th>Uygulama</th><th>Yeni Sağlık</th></tr></thead>
+          <tbody>
+            ${state.maintenanceLogs.length ? state.maintenanceLogs.map(m => `
+              <tr>
+                <td class="mono">${m.time}</td>
+                <td><span class="badge ${m.type.includes("PdM") ? "badge-warn" : "badge-info"}">${m.type}</span></td>
+                <td class="mono">${m.lineId} · ${m.machine}</td>
+                <td>${m.action}</td>
+                <td class="mono" style="color:var(--accent-emerald);">%${m.healthAfter}</td>
+              </tr>
+            `).join("") : `<tr><td colspan="5" class="text-muted">Henüz önleyici veya kestirimci bakım kaydı yok.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if (currentLaptopTab === "energy") {
+    const estShiftKwh = (activeKw * 8).toFixed(1);
+    const estCostTl = (state.totalKwh * 4.25).toFixed(2);
+    bodyHtml = `
+      <div class="line-panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+          <div>
+            <div style="font-size:14px;font-weight:700;">Enerji Tüketimi & Gerçek Zamanlı Grafikler</div>
+            <div class="text-muted">Hat bazlı anlık güç çekişi (kW), vardiya enerji birikimi (kWh) ve grafiksel takip.</div>
+          </div>
+          <span class="badge badge-ok">ANLIK YÜK: ${activeKw.toFixed(1)} kW</span>
+        </div>
+
+        <div class="charts-two-col">
+          <div class="chart-box">
+            <strong style="font-size:12.5px;">Güç Yükü Grafiği (kW)</strong>
+            <canvas id="chart-energy-kw" class="chart-canvas"></canvas>
+          </div>
+          <div class="chart-box">
+            <strong style="font-size:12.5px;">OEE Performans Grafiği (%)</strong>
+            <canvas id="chart-energy-oee" class="chart-canvas"></canvas>
+          </div>
+        </div>
+
+        <div class="param-chip-grid">
+          <div class="param-chip"><span>Anlık Toplam Güç</span><strong>${activeKw.toFixed(1)} kW</strong></div>
+          <div class="param-chip"><span>Vardiya Tüketimi</span><strong>${state.totalKwh.toFixed(2)} kWh</strong></div>
+          <div class="param-chip"><span>8 Saatlik Tahmin</span><strong>${estShiftKwh} kWh</strong></div>
+          <div class="param-chip"><span>Tahmini Enerji Maliyeti</span><strong>${estCostTl} TL</strong></div>
+        </div>
+
+        <table class="data-table" style="margin-top:8px;">
+          <thead>
+            <tr><th>Hat</th><th>Ekipman & İstasyon</th><th>Durum</th><th>Anlık Güç</th><th>Üretilen</th></tr>
+          </thead>
+          <tbody>
+            ${state.lines.map(l => {
+              const loadRatio = l.status === "OK" ? 1.0 : l.status === "MES" ? 0.78 : 0.52;
+              const lineKw = (l.kw * loadRatio).toFixed(1);
+              return `
+                <tr>
+                  <td class="mono"><strong>${l.id}</strong></td>
+                  <td>${l.machine} · <span class="text-muted">${l.station}</span></td>
+                  <td><span class="badge ${l.status === "OK" ? "badge-ok" : l.status === "MES" ? "badge-warn" : "badge-crit"}">${l.status}</span></td>
+                  <td class="mono" style="color:var(--accent-teal);">${lineKw} kW</td>
+                  <td class="mono">${l.produced} ${sector.unit}</td>
+                </tr>
+              `;
+            }).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if (currentLaptopTab === "dispatch") {
+    const activeEvent = state.activeFault;
+    const suggestedUnit = activeEvent ? activeEvent.targetUnit : "Bakım & Mühendislik";
+    bodyHtml = `
+      <div class="line-panel">
+        <div style="font-size:14px;font-weight:700;">Duruma Göre İlgili Birime Yönlendirme</div>
+        <div class="text-muted">
+          ${activeEvent
+            ? `Aktif Olay: <strong>[${activeEvent.lineId}] ${activeEvent.title}</strong> · Önerilen Birim: <span style="color:var(--accent-teal);">${suggestedUnit}</span> — Yönlendirdiğinde ilgili birim müdahaleyi üstlenir.`
+            : `Hat durumuna veya kestirimci/kalite ihtiyacına göre ilgili birime iş devri yapabilirsiniz.`}
+        </div>
+
+        <div class="line-detail-grid" style="margin-top:6px;">
+          ${DISPATCH_UNITS.map(u => `
+            <div class="param-chip" style="padding:12px;">
+              <div style="display:flex;justify-content:space-between;align-items:center;">
+                <strong>${u.name}</strong>
+                <span class="badge badge-info">${u.code}</span>
+              </div>
+              <div class="text-muted" style="margin-top:5px;">${u.focus}</div>
+              <button class="btn btn-sm btn-primary" style="margin-top:10px;" onclick="dispatchToUnit('${u.id}', '${u.name}')">
+                ${u.name} Birimine Yönlendir
+              </button>
+            </div>
+          `).join("")}
+        </div>
+
+        <div style="margin-top:10px;font-size:13px;font-weight:700;">Birim Yönlendirme & Müdahale Kayıtları</div>
+        <table class="data-table">
+          <thead><tr><th>Saat</th><th>Sorumlu Birim</th><th>Konu</th><th>Birim Aksiyonu</th></tr></thead>
+          <tbody>
+            ${state.dispatchLogs.length ? state.dispatchLogs.map(d => `
+              <tr>
+                <td class="mono">${d.time}</td>
+                <td><strong>${d.unitName}</strong></td>
+                <td>${d.summary}</td>
+                <td><span class="badge ${d.actionStatus === "YANLIŞ BİRİM" ? "badge-warn" : "badge-ok"}">${d.actionStatus}</span></td>
+              </tr>
+            `).join("") : `<tr><td colspan="4" class="text-muted">Henüz birim yönlendirmesi yapılmadı.</td></tr>`}
+          </tbody>
+        </table>
+      </div>
+    `;
+  } else if (currentLaptopTab === "quality") {
+    bodyHtml = `
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        ${sector.orders.map(ord => {
+          const approved = state.approvedRecipes.includes(ord.code);
+          return `
+            <div class="line-panel">
+              <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;">
+                <div>
+                  <strong class="mono">${ord.code}</strong> · <strong>${ord.product}</strong>
+                  <span class="text-muted mono" style="margin-left:8px;">Lot: ${ord.lot} · İstasyon: ${ord.station}</span>
+                </div>
+                <div>
+                  ${approved
+                    ? `<span class="badge badge-ok">PARAMETRELER ONAYLANDI</span>`
+                    : `<button class="btn btn-sm btn-primary" onclick="approveRecipe('${ord.code}')">Reçete & Kalite Onayla</button>`
+                  }
+                </div>
+              </div>
+              <div class="param-chip-grid">
+                ${ord.params.map(p => `
+                  <div class="param-chip">
+                    <span>${p.k}</span>
+                    <strong>${p.v}</strong>
+                  </div>
+                `).join("")}
+              </div>
+            </div>
+          `;
+        }).join("")}
+      </div>
+    `;
+  } else if (currentLaptopTab === "shiftnotes") {
+    bodyHtml = `
+      <div class="line-panel">
+        <div style="font-size:14px;font-weight:700;">Vardiya Devir Notu</div>
+        <textarea id="mes-handover-input" class="form-textarea" placeholder="Vardiya devir notunu buraya yazın...">${state.shiftHandoverNote || ""}</textarea>
+        <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-primary btn-sm" onclick="saveHandoverNote()">Devir Notunu Kaydet</button>
+          ${state.pending8D ? `<button class="btn btn-warning btn-sm" onclick="open8DModal()">8D Raporunu Aç</button>` : ""}
+        </div>
+      </div>
+
+      <div class="line-panel">
+        <div style="font-size:14px;font-weight:700;">MES Olay & Eskalasyon Kayıtları (${state.eventLogs.length})</div>
+        <table class="data-table">
+          <thead><tr><th>Saat</th><th>Seviye</th><th>Açıklama</th></tr></thead>
+          <tbody>
+            ${state.eventLogs.map(ev => `
+              <tr>
+                <td class="mono">${ev.time}</td>
+                <td><span class="badge ${ev.type === "WARN" ? "badge-warn" : ev.type === "OK" ? "badge-ok" : "badge-info"}">${ev.type}</span></td>
+                <td>${ev.text}</td>
+              </tr>
+            `).join("")}
+          </tbody>
+        </table>
+      </div>
+    `;
+  }
+
+  host.innerHTML = headerHtml + bodyHtml;
+  bindImageWithFallback(document.getElementById("mes-header-sector-logo"), sectorLogo, fallbackLogo);
+
+  if (currentLaptopTab === "live") {
+    drawLineChart("chart-live-oee", state.oeeHistory, "#3fb97f", "%");
+    drawLineChart("chart-live-kw", state.kwHistory, "#2bb3ae", "kW");
+  } else if (currentLaptopTab === "energy") {
+    drawLineChart("chart-energy-kw", state.kwHistory, "#2bb3ae", "kW");
+    drawLineChart("chart-energy-oee", state.oeeHistory, "#3fb97f", "%");
+  }
+}
+
+window.askCrewAboutDrop = function (lineId, targetType) {
+  const sector = getCurrentSector();
+  const nowStr = formatClock(state.clockMinutes);
+
+  if (targetType === "supervisor") {
+    state.chatMessages.unshift({
+      time: nowStr,
+      sender: state.operatorName,
+      role: "Sen",
+      text: `Amirim, mevcut üretim hızı ve OEE (%${getAverageOee().toFixed(1)}) düşüşünün ana nedeni nedir ve nasıl ilerleyelim?`
+    });
+    const slowLine = state.lines.find(l => l.status !== "OK") || state.lines.reduce((a, b) => a.oee < b.oee ? a : b, state.lines[0]);
+    state.chatMessages.unshift({
+      time: nowStr,
+      sender: sector.supervisor,
+      role: "Amir",
+      text: `${slowLine.id} (${slowLine.station}) hattında ${slowLine.status !== "OK" ? "aktif sapma/düşüş" : "titreşim & bakım ihtiyacı"} var. İlgili birime yönlendir veya sahada müdahale edip reçete/lot teyidini netleştirelim.`
+    });
+  } else {
+    const line = state.lines.find(l => l.id === lineId) || state.lines[0];
+    state.chatMessages.unshift({
+      time: nowStr,
+      sender: state.operatorName,
+      role: "Sen",
+      text: `${line.operator}, ${line.id} (${line.station}) hattında üretim neden düştü? Sahada ne görüyorsun?`
+    });
+    const reason = (state.activeFault && state.activeFault.lineId === line.id)
+      ? state.activeFault.rootCause
+      : `Titreşim (${line.vib}) ve kestirimci risk (${line.pdmRisk}) nedeniyle çevrim temposu temkinli.`;
+    state.chatMessages.unshift({
+      time: nowStr,
+      sender: `${line.operator} (${line.id})`,
+      role: "Hat Operatörü",
+      text: `İstasyonda durum şu: ${reason}. Sıcaklık ${line.temp}, basınç ${line.pressure}. İlgili birime yönlendirme veya saha kontrolü ile toparlarız.`
+    });
+  }
+  renderLaptopContent();
+};
+
+window.jumpToFloorLine = function (lineId) {
+  currentFloorLineId = lineId;
+  switchScene("floor");
+};
+
+window.ackLineMes = function (lineId) {
+  const line = state.lines.find(l => l.id === lineId);
+  if (line) {
+    line.status = "OK";
+    line.currentRate = line.rate;
+    line.operatorNote = "";
+  }
+  if (state.activeFault && state.activeFault.lineId === lineId && !state.activeFault.requiresFloor) {
+    state.activeFault = null;
+    activeRadioFault = null;
+    updateRadioBadge();
+  }
+  addEventLog("OK", `[${lineId}] Hat durumu onaylandı.`);
+  renderLaptopContent();
+};
+
+window.verifyLotAndBarcode = function (orderCode, lot, barcode) {
+  if (!state.verifiedLots.includes(lot)) {
+    state.verifiedLots.push(lot);
+    state.oeeBonus = Math.min(4.0, state.oeeBonus + 0.4);
+  }
+  if (state.activeFault && !state.activeFault.requiresFloor) {
+    resolveMesEvent(state.activeFault);
+  }
+  addEventLog("OK", `[${orderCode}] Lot (${lot}) ve Barkod (${barcode}) teyit edildi.`);
+  renderLaptopContent();
+};
+
+window.approveRecipe = function (orderCode) {
+  if (!state.approvedRecipes.includes(orderCode)) {
+    state.approvedRecipes.push(orderCode);
+    state.oeeBonus = Math.min(4.0, state.oeeBonus + 0.4);
+  }
+  addEventLog("OK", `[${orderCode}] Reçete ve kalite parametreleri onaylandı.`);
+  renderLaptopContent();
+};
+
+window.setOrderStatus = function (orderCode, newStatus) {
+  state.orderStatus[orderCode] = newStatus;
+  addEventLog("INFO", `İş emri ${orderCode} durumu '${newStatus}' olarak güncellendi.`);
+  renderLaptopContent();
+};
+
+window.saveHandoverNote = function () {
+  const ta = document.getElementById("mes-handover-input");
+  if (!ta) return;
+  state.shiftHandoverNote = ta.value.trim();
+  addEventLog("OK", `Vardiya devir notu kaydedildi.`);
+  renderLaptopContent();
+};
+
+window.runMaintenanceAction = function (lineId, typeLabel, actionLabel, healthGain, newPdmRisk) {
+  const line = state.lines.find(l => l.id === lineId);
+  if (!line) return;
+  line.health = Math.min(100, Number((line.health + healthGain).toFixed(1)));
+  line.oee = Math.min(98.5, Number((line.oee + 0.8).toFixed(1)));
+  line.pdmRisk = newPdmRisk;
+  line.vib = "1.7 mm/s";
+
+  state.maintenanceLogs.unshift({
+    time: formatClock(state.clockMinutes),
+    type: typeLabel,
+    lineId: line.id,
+    machine: line.machine,
+    action: actionLabel,
+    healthAfter: line.health.toFixed(0)
+  });
+  addEventLog("OK", `[${line.id}] ${typeLabel}: ${actionLabel} (Sağlık: %${line.health.toFixed(0)}).`);
+  renderLaptopContent();
+};
+
+window.dispatchToUnit = function (unitId, unitName) {
+  const f = state.activeFault;
+  const sector = getCurrentSector();
+  if (f && f.unitIds && !f.unitIds.includes(unitId)) {
+    state.oeeBonus = Math.max(-4.0, state.oeeBonus - 0.4);
+    state.wrongCodes += 1;
+    state.dispatchLogs.unshift({ time: formatClock(state.clockMinutes), unitId, unitName, summary: `${f.lineId} · ${f.title} (${f.code})`, actionStatus: "YANLIŞ BİRİM" });
+    state.chatMessages.unshift({ time: formatClock(state.clockMinutes), sender: unitName, role: "Birim Ekibi", text: `Bu olay bizim sorumluluk alanımızda değil. Önerilen birim: ${f.targetUnit}.` });
+    addEventLog("WARN", `[${f.lineId}] ${unitName} yanlış birim: olay devredilemedi.`);
+    renderLaptopContent();
+    return;
+  }
+  const targetLine = f
+    ? state.lines.find(l => l.id === f.lineId)
+    : state.lines.reduce((a, b) => a.health < b.health ? a : b, state.lines[0]);
+
+  const summary = f
+    ? `${f.lineId} · ${f.title} (${f.code})`
+    : `${targetLine.id} · ${targetLine.station} (${sector.name})`;
+
+  if (targetLine) {
+    targetLine.status = "OK";
+    targetLine.currentRate = targetLine.rate;
+    targetLine.operatorNote = "";
+    targetLine.health = Math.min(100, Number((targetLine.health + 6).toFixed(1)));
+    targetLine.oee = Math.min(98.5, Number((targetLine.oee + 0.7).toFixed(1)));
+    if (unitId === "BAKIM") {
+      targetLine.vib = "1.7 mm/s";
+      targetLine.pdmRisk = "Düşük (%12)";
+    }
+  }
+
+  let unitActionNote = `${unitName} ekibi sahaya çıktı ve müdahaleyi tamamladı.`;
+  if (unitId === "KALITE") unitActionNote = "Kalite Güvence numune/lot kontrolünü onayladı.";
+  else if (unitId === "ENERJI") unitActionNote = "Enerji ekibi besleme & basınç/ısı dengesini sabitledi.";
+  else if (unitId === "PLANLAMA") unitActionNote = "Planlama iş emri ve lot akışını güncelledi.";
+  if (UNIT_NOTES[unitId]) unitActionNote = UNIT_NOTES[unitId];
+
+  if (f) {
+    state.resolvedFaults += 1;
+    state.activeFault = null;
+    activeRadioFault = null;
+    updateRadioBadge();
+  }
+
+  state.dispatchLogs.unshift({
+    time: formatClock(state.clockMinutes),
+    unitId,
+    unitName,
+    summary,
+    actionStatus: "BİRİM ÇÖZDÜ"
+  });
+
+  state.chatMessages.unshift({
+    time: formatClock(state.clockMinutes),
+    sender: unitName,
+    role: "Birim Ekibi",
+    text: `${summary} için çağrıyı devraldık. ${unitActionNote}`
+  });
+
+  addEventLog("OK", `${unitName} yönlendirmeyi devraldı ve tamamladı: ${summary}`);
+  renderLaptopContent();
+};
+
+window.assignDowntimeCode = function (code, label) {
+  const f = state.activeFault;
+  if (!f) return;
+
+  const isExpected = f.expectedCodes ? f.expectedCodes.includes(code) :
+    (f.miniGame === "balance" && (code === "DT-03" || code === "DT-05")) ||
+    (f.miniGame === "conveyor" && (code === "DT-01" || code === "DT-02"));
+
+  if (isExpected) {
+    state.correctCodes += 1;
+    state.oeeBonus = Math.min(4.0, state.oeeBonus + 0.5);
+  } else {
+    state.wrongCodes += 1;
+    state.oeeBonus = Math.max(-4.0, state.oeeBonus - 0.5);
+  }
+
+  state.downtimeLogs.unshift({
+    time: formatClock(state.clockMinutes),
+    lineId: f.lineId,
+    eventTitle: f.title,
+    code,
+    label,
+    correct: isExpected
+  });
+  addEventLog(isExpected ? "OK" : "WARN", `[${f.lineId}] Duruş kodu atandı: ${code} (${label})`);
+
+  if (!f.requiresFloor) {
+    resolveMesEvent(f);
+  } else {
+    renderLaptopContent();
+  }
+};
+
+/* ==================== FACTORY FLOOR ==================== */
+function clearMiniGameLoop() {
+  if (miniGameLoop) {
+    clearInterval(miniGameLoop);
+    miniGameLoop = null;
+  }
+}
+
+function renderFloorScene() {
+  clearMiniGameLoop();
+  const sector = getCurrentSector();
+  const floorBgPath = getSectorFloorImage(sector);
+  const sectorLogo = getSectorLogoSrc(sector);
+  const fallbackLogo = makeSectorSvg(sector.shortCode, sector.accent);
+
+  applyBackgroundImageWithFallback(document.getElementById("scene-floor"), floorBgPath, GAME_ASSETS.saha_genel);
+
+  const line = state.lines.find(l => l.id === currentFloorLineId) || state.lines[0];
+  currentFloorLineId = line.id;
+
+  const sw = document.getElementById("floor-line-switcher");
+  sw.innerHTML = state.lines.map(l => {
+    const active = l.id === line.id;
+    const dot = l.status === "FAULT" ? "badge-crit" : l.status === "MES" ? "badge-warn" : "badge-ok";
+    return `<button class="btn btn-sm ${active ? "btn-primary" : ""}" onclick="jumpToFloorLine('${l.id}')">${l.id} <span class="badge ${dot}" style="padding:1px 6px;">${l.status}</span></button>`;
+  }).join("");
+
+  document.getElementById("floor-line-title").textContent = `${line.id} · ${line.name} (${line.machine})`;
+
+  const hasFloorTaskHere = Boolean(
+    state.activeFault &&
+    state.activeFault.requiresFloor &&
+    state.activeFault.lineId === line.id
+  );
+
+  const badgeEl = document.getElementById("floor-status-badge");
+  const imgEl = document.getElementById("floor-fault-img");
+  const titleEl = document.getElementById("floor-fault-title");
+  const descEl = document.getElementById("floor-fault-desc");
+  const noteEl = document.getElementById("floor-operator-note");
+  const host = document.getElementById("floor-minigame-host");
+
+  bindImageWithFallback(imgEl, sectorLogo, fallbackLogo);
+
+  if (!hasFloorTaskHere) {
+    badgeEl.className = "badge badge-ok";
+    badgeEl.textContent = "SAHA GÖRÜNÜMÜ";
+    titleEl.textContent = `${sector.name} · ${line.name}`;
+    descEl.textContent = `${line.station} · Op: ${line.operator} · Üretilen: ${line.produced} ${sector.unit} · Isı: ${line.temp} · Basınç: ${line.pressure} · Titreşim: ${line.vib}`;
+    noteEl.style.display = line.operatorNote ? "block" : "none";
+    if (line.operatorNote) noteEl.innerHTML = `<strong>Hat Notu:</strong> ${line.operatorNote}`;
+
+    host.innerHTML = `
+      <div>
+        <span class="badge badge-info">${sector.name.toUpperCase()}</span>
+        <h3 style="margin-top:8px;font-size:17px;">Bu Hatta Aktif Saha Görevi Bulunmuyor</h3>
+        <p class="text-muted" style="margin-top:6px;line-height:1.5;">
+          Hat normal akışında çalışıyor. Yeni bir saha görevi oluştuğunda telsiz veya hat kartı üzerinden sahaya inebilirsiniz.
+        </p>
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-primary" onclick="switchScene('laptop')">MES Masaüstüne Dön</button>
+      </div>
+    `;
+    return;
+  }
+
+  const f = state.activeFault;
+  badgeEl.className = "badge badge-crit";
+  badgeEl.textContent = `SAHA GÖREVİ · ${f.code}`;
+  titleEl.textContent = f.title;
+  descEl.textContent = `${sector.name} · ${f.lineId} (${f.station}) · Op: ${f.operator} · Birim: ${f.targetUnit}`;
+  noteEl.style.display = "block";
+  noteEl.innerHTML = `<strong>Saha Görevi Talimatı:</strong> ${f.operatorQuestion}`;
+
+  if (f.miniGame === "balance") {
+    setupBalanceMiniGame(host, f);
+  } else if (f.miniGame === "sensor") {
+    setupSensorMiniGame(host, f);
+  } else {
+    setupConveyorMiniGame(host, f, sector);
+  }
+}
+
+function setupBalanceMiniGame(host, fault) {
+  let pos = 22;
+  let vel = 1.25;
+  let stableMs = 0;
+
+  host.innerHTML = `
+    <div>
+      <span class="badge badge-warn">DENGELEME</span>
+      <h3 style="margin-top:8px;font-size:17px;">Dengede Tut</h3>
+      <p class="text-muted" style="margin-top:5px;">
+        İbreyi yeşil bölgede <strong>3.0 saniye</strong> sabit tutun.
+      </p>
+      <div class="gauge-track">
+        <div class="gauge-safe-zone"></div>
+        <div id="balance-needle" class="gauge-needle"></div>
+      </div>
+      <div style="display:flex;justify-content:space-between;font-size:12px;" class="mono">
+        <span id="balance-pct">İbre: %22</span>
+        <span id="balance-timer" style="color:var(--accent-emerald);">Denge Süresi: 0.0s / 3.0s</span>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;">
+      <button id="btn-push-left" class="btn btn-primary" style="flex:1;padding:12px;">← Azalt</button>
+      <button id="btn-push-right" class="btn btn-primary" style="flex:1;padding:12px;">Artır →</button>
+    </div>
+  `;
+
+  document.getElementById("btn-push-left").addEventListener("click", () => { pos = Math.max(0, pos - 7.5); });
+  document.getElementById("btn-push-right").addEventListener("click", () => { pos = Math.min(100, pos + 7.5); });
+
+  miniGameLoop = setInterval(() => {
+    if (state.speed === 0) return;
+    pos += vel * (0.85 + Math.random() * 0.35);
+    if (pos <= 2) { pos = 2; vel = Math.abs(vel); }
+    if (pos >= 98) { pos = 98; vel = -Math.abs(vel); }
+
+    const needle = document.getElementById("balance-needle");
+    const pctEl = document.getElementById("balance-pct");
+    const timerEl = document.getElementById("balance-timer");
+    if (!needle) { clearMiniGameLoop(); return; }
+
+    needle.style.left = `${pos}%`;
+    pctEl.textContent = `İbre: %${Math.round(pos)}`;
+
+    const inSafe = pos >= 38 && pos <= 62;
+    if (inSafe) {
+      stableMs += 60;
+      needle.style.background = "#3fb97f";
+    } else {
+      stableMs = Math.max(0, stableMs - 30);
+      needle.style.background = "#2bb3ae";
+    }
+
+    timerEl.textContent = `Denge Süresi: ${(stableMs / 1000).toFixed(1)}s / 3.0s`;
+    if (stableMs >= 3000) {
+      clearMiniGameLoop();
+      completeActiveFault(fault, "Proses değeri güvenli aralıkta dengelendi.");
+    }
+  }, 60);
+}
+
+function setupSensorMiniGame(host, fault) {
+  sensorCleanPct = 0;
+  sensorDrawing = false;
+
+  host.innerHTML = `
+    <div>
+      <span class="badge badge-warn">SENSÖR TEMİZLEME</span>
+      <h3 style="margin-top:8px;font-size:17px;">Sensör Temizliği</h3>
+      <p class="text-muted" style="margin-top:5px;">
+        Kirli sensör penceresinin üzerinde fareyi basılı tutup sürükleyerek temizleyin.
+      </p>
+      <canvas id="sensor-canvas" width="620" height="210" style="margin-top:10px;"></canvas>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-top:8px;">
+        <span id="sensor-clean-label" class="mono" style="font-size:12px;color:var(--accent-teal);">Temizlik: %0</span>
+        <button id="btn-sensor-wipe-boost" class="btn btn-sm">Sil (+%20)</button>
+      </div>
+    </div>
+  `;
+
+  const canvas = document.getElementById("sensor-canvas");
+  const ctx = canvas.getContext("2d");
+
+  const dirtCanvas = document.createElement("canvas");
+  dirtCanvas.width = canvas.width;
+  dirtCanvas.height = canvas.height;
+  const dctx = dirtCanvas.getContext("2d");
+  dctx.fillStyle = "rgba(71, 55, 38, 0.88)";
+  dctx.fillRect(0, 0, dirtCanvas.width, dirtCanvas.height);
+
+  function redraw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.fillStyle = "#26292d";
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+    ctx.strokeStyle = "#2bb3ae";
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.arc(canvas.width / 2, canvas.height / 2, 58, 0, Math.PI * 2);
+    ctx.stroke();
+    ctx.fillStyle = "#e6e7e8";
+    ctx.font = "700 15px monospace";
+    ctx.textAlign = "center";
+    ctx.fillText("SENSÖR LENSİ", canvas.width / 2, canvas.height / 2 + 5);
+    ctx.drawImage(dirtCanvas, 0, 0);
+  }
+
+  function updateCleanEstimate() {
+    const imgData = dctx.getImageData(0, 0, dirtCanvas.width, dirtCanvas.height).data;
+    let transparentPixels = 0;
+    let totalSampled = 0;
+    for (let i = 3; i < imgData.length; i += 40) {
+      totalSampled++;
+      if (imgData[i] < 45) transparentPixels++;
+    }
+    sensorCleanPct = Math.min(100, Math.round((transparentPixels / totalSampled) * 100));
+    const lbl = document.getElementById("sensor-clean-label");
+    if (lbl) lbl.textContent = `Temizlik: %${sensorCleanPct}`;
+    if (sensorCleanPct >= 92) {
+      sensorCleanPct = 100;
+      if (lbl) lbl.textContent = `Temizlik: %100`;
+      completeActiveFault(fault, "Sensör yüzeyi temizlendi.");
+    }
+  }
+
+  function scratchAt(clientX, clientY, radius = 26) {
+    const rect = canvas.getBoundingClientRect();
+    const x = ((clientX - rect.left) / rect.width) * canvas.width;
+    const y = ((clientY - rect.top) / rect.height) * canvas.height;
+    dctx.save();
+    dctx.globalCompositeOperation = "destination-out";
+    dctx.beginPath();
+    dctx.arc(x, y, radius, 0, Math.PI * 2);
+    dctx.fill();
+    dctx.restore();
+    redraw();
+    updateCleanEstimate();
+  }
+
+  redraw();
+  canvas.addEventListener("mousedown", e => { sensorDrawing = true; scratchAt(e.clientX, e.clientY); });
+  window.addEventListener("mouseup", () => { sensorDrawing = false; });
+  canvas.addEventListener("mousemove", e => { if (sensorDrawing) scratchAt(e.clientX, e.clientY); });
+  canvas.addEventListener("touchmove", e => {
+    e.preventDefault();
+    if (e.touches[0]) scratchAt(e.touches[0].clientX, e.touches[0].clientY, 30);
+  }, { passive: false });
+
+  document.getElementById("btn-sensor-wipe-boost").addEventListener("click", () => {
+    for (let k = 0; k < 18; k++) {
+      const rx = canvas.getBoundingClientRect().left + Math.random() * canvas.getBoundingClientRect().width;
+      const ry = canvas.getBoundingClientRect().top + Math.random() * canvas.getBoundingClientRect().height;
+      scratchAt(rx, ry, 34);
+    }
+  });
+}
+
+function setupConveyorMiniGame(host, fault, sector) {
+  let caught = 0;
+  const needed = 4;
+  let items = [];
+  let spawnCounter = 0;
+  let nextIsDefect = true;
+
+  const defectLabel = sector.id === "tekstil" ? "ATKI HATALI" : "HATA";
+  const okLabel = sector.id === "tekstil" ? "UYGUN KUMAŞ" : "OK";
+
+  host.innerHTML = `
+    <div>
+      <div style="display:flex;justify-content:space-between;align-items:center;">
+        <span class="badge badge-warn">SAHA AYIKLAMA GÖREVİ</span>
+        <span id="conv-progress" class="mono" style="font-size:12px;color:var(--accent-emerald);">Ayıklanan: 0 / ${needed}</span>
+      </div>
+      <h3 style="margin-top:8px;font-size:17px;">${sector.name} · Hat Ayıklama</h3>
+      <p class="text-muted" style="margin-top:5px;">
+        Bantta ilerleyen <strong style="color:var(--accent-rose);">${defectLabel}</strong> etiketli ürünlere tıklayarak sahadan ayıklayın.
+      </p>
+      <div id="conveyor-lane" class="conveyor-lane" style="margin-top:12px;"></div>
+    </div>
+    <div class="text-muted">Standart ürünlere tıklamayın.</div>
+  `;
+
+  const lane = document.getElementById("conveyor-lane");
+
+  function canSpawnSafely() {
+    if (!items.length) return true;
+    const leftmostX = Math.min(...items.map(i => i.x));
+    return leftmostX > 36;
+  }
+
+  function spawnItem() {
+    if (!canSpawnSafely()) return;
+    const isDefect = nextIsDefect;
+    nextIsDefect = !nextIsDefect;
+
+    const id = `itm-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`;
+    const el = document.createElement("div");
+    el.id = id;
+    el.className = `conveyor-item ${isDefect ? "item-defect" : "item-ok"}`;
+    el.style.left = "-104px";
+    el.innerHTML = isDefect
+      ? `<span>${defectLabel}</span><span style="font-size:10px;">AYIKLA</span>`
+      : `<span>${okLabel}</span><span style="font-size:10px;">UYGUN</span>`;
+
+    el.addEventListener("click", () => {
+      if (isDefect) {
+        caught++;
+        state.totalScrap++;
+        el.remove();
+        items = items.filter(x => x.id !== id);
+        const prog = document.getElementById("conv-progress");
+        if (prog) prog.textContent = `Ayıklanan: ${caught} / ${needed}`;
+        if (caught >= needed) {
+          clearMiniGameLoop();
+          completeActiveFault(fault, `${needed} adet hatalı ürün sahada ayıklandı.`);
+        }
+      } else {
+        state.oeeBonus = Math.max(-4.0, state.oeeBonus - 0.3);
+        el.style.borderColor = "#e0a93b";
+      }
+    });
+
+    lane.appendChild(el);
+    items.push({ id, el, x: -104, isDefect });
+  }
+
+  spawnItem();
+  miniGameLoop = setInterval(() => {
+    if (!document.getElementById("conveyor-lane")) { clearMiniGameLoop(); return; }
+    if (state.speed === 0) return;
+
+    spawnCounter++;
+    if (spawnCounter % 36 === 0) spawnItem();
+
+    const width = lane.clientWidth || 600;
+    for (let i = items.length - 1; i >= 0; i--) {
+      const it = items[i];
+      it.x += 2.2;
+      it.el.style.left = `${it.x}px`;
+      if (it.x > width + 20) {
+        it.el.remove();
+        items.splice(i, 1);
+      }
+    }
+  }, 50);
+}
+
+function completeActiveFault(fault, summaryMsg) {
+  const line = state.lines.find(l => l.id === fault.lineId);
+  if (line) {
+    line.status = "OK";
+    line.currentRate = line.rate;
+    line.operatorNote = "";
+    line.oee = Number(Math.min(98.5, line.oee + 1.0).toFixed(1));
+  }
+
+  state.resolvedFaults += 1;
+  state.activeFault = null;
+  activeRadioFault = null;
+  updateRadioBadge();
+  closeRadioDrawer();
+
+  addEventLog("OK", `[${fault.lineId}] ${summaryMsg}`);
+
+  if (state.resolvedFaults % 2 === 0) {
+    state.pending8D = fault;
+    open8DModal();
+  } else {
+    renderFloorScene();
+  }
+}
+
+/* ==================== 8D MODAL ==================== */
+function open8DModal() {
+  const f = state.pending8D;
+  if (!f) return;
+  document.getElementById("d8-modal-title").textContent = `8D Raporu · ${f.lineId} (${f.title})`;
+  document.getElementById("d8-modal-body").innerHTML = `
+    <div style="padding:12px;border-radius:8px;background:var(--bg-950);border:1px solid var(--line);">
+      <div style="font-size:12px;color:var(--text-secondary);">Kök Neden Bulgusu</div>
+      <div style="font-size:14px;font-weight:700;margin-top:4px;">${f.rootCause}</div>
+    </div>
+    <div style="font-size:13px;font-weight:700;">Kalıcı Önleyici Faaliyeti Seçin:</div>
+    <div class="choice-list">
+      ${f.d8Options.map((opt, idx) => `<button class="choice-btn" onclick="submit8DOption(${idx})">${opt}</button>`).join("")}
+    </div>
+  `;
+  document.getElementById("eightd-modal").classList.add("open");
+}
+
+window.submit8DOption = function (idx) {
+  const f = state.pending8D;
+  if (!f) return;
+  const key = `${f.sectorId}:${f.scenarioId}`;
+  if (idx === 0) {
+    if (!state.completed8DList.includes(key)) state.completed8DList.push(key);
+    state.oeeBonus = Math.min(4.0, state.oeeBonus + 0.8);
+    addEventLog("OK", `8D onaylandı: ${f.title}`);
+    saveCareerToStorage(false);
+  } else {
+    state.oeeBonus = Math.max(-4.0, state.oeeBonus - 0.5);
+    addEventLog("WARN", `8D raporu sapmalı tamamlandı: ${f.title}`);
+  }
+  state.pending8D = null;
+  document.getElementById("eightd-modal").classList.remove("open");
+  if (document.getElementById("scene-floor").classList.contains("active")) renderFloorScene();
+  else if (document.getElementById("scene-laptop").classList.contains("active")) renderLaptopContent();
+};
+
+/* ==================== MANDATORY MEETING ROOM ==================== */
+const MEETING_AGENDA = [
+  {
+    speaker: "Üretim Amiri · Zorunlu Gündem 1/3",
+    question: "Hat verimliliğinde düşüş görüldüğünde ilk aksiyonumuz ne olsun?",
+    options: [
+      { label: "Hat operatörüyle sapma nedenini netleştirip ilgili birime veya sahaya müdahale verelim." },
+      { label: "Kritik parametreleri ve lot/barkod doğrulamasını aksatmadan akışı koruyalım." }
+    ]
+  },
+  {
+    speaker: "Bakım & Kalite Sorumlusu · Zorunlu Gündem 2/3",
+    question: "Önleyici/kestirimci bakım ve enerji tüketimi için hangi adımı uygulayalım?",
+    options: [
+      { label: "Titreşim ve kestirimci risk skoruna göre zamanında PM/PdM bakımı yapalım." },
+      { label: "Hatalı ürünleri ayıklayıp anlık kW/kWh yükünü düzenli izleyelim." }
+    ]
+  },
+  {
+    speaker: "Vardiya Koordinasyonu · Zorunlu Gündem 3/3",
+    question: "Vardiya devir tesliminde hangi bilgiyi öncelikli olarak aktaralım?",
+    options: [
+      { label: "Aktif iş emri, atanan operatörler, istasyon durumu, enerji ve OEE değerini devredelim." },
+      { label: "Açık duruş/bakım/yönlendirme kayıtlarını ve vardiya notunu net bırakalım." }
+    ]
+  }
+];
+
+function openMeetingRoom(isMandatory = true) {
+  applyBackgroundImageWithFallback(document.getElementById("meeting-bg-photo"), GAME_ASSETS.toplanti_odasi);
+  state.meetingStep = 0;
+  state.meetingDoneToday = false;
+  const closeBtn = document.getElementById("btn-close-meeting");
+  const badgeEl = document.getElementById("meeting-mode-badge");
+  const titleEl = document.getElementById("meeting-title-text");
+
+  if (isMandatory) {
+    badgeEl.className = "badge badge-crit";
+    badgeEl.textContent = "ZORUNLU TOPLANTI ÇAĞRISI";
+    titleEl.textContent = "Amir Çağrısı ";
+    closeBtn.disabled = true;
+    closeBtn.textContent = "Gündemi Tamamla (0/3)";
+  } else {
+    badgeEl.className = "badge badge-info";
+    badgeEl.textContent = "KOORDİNASYON TOPLANTISI";
+    titleEl.textContent = "Vardiya Koordinasyon Toplantısı";
+    closeBtn.disabled = false;
+    closeBtn.textContent = "Kapat";
+  }
+
+  renderMeetingContent();
+  document.getElementById("meeting-overlay").classList.add("active");
+}
+
+function renderMeetingContent() {
+  const host = document.getElementById("meeting-content");
+  const sector = getCurrentSector();
+  const closeBtn = document.getElementById("btn-close-meeting");
+
+  if (state.meetingDoneToday || state.meetingStep >= MEETING_AGENDA.length) {
+    state.meetingDoneToday = true;
+    closeBtn.disabled = false;
+    closeBtn.className = "btn btn-sm btn-success";
+    closeBtn.textContent = "Toplantıdan Çık";
+
+    host.innerHTML = `
+      <div style="padding:14px;border-radius:10px;background:rgba(63,185,127,0.09);border:1px solid rgba(63,185,127,0.35);">
+        <div style="font-size:12px;color:#7bd3a4;font-weight:700;">ZORUNLU GÜNDEM TAMAMLANDI · ${sector.name}</div>
+        <p style="margin-top:8px;font-size:14px;line-height:1.55;">
+          Tüm gündem maddeleri tamamlandı. Güncel OEE etkisi:
+          <strong class="mono" style="color:var(--accent-teal);">${state.oeeBonus >= 0 ? "+" : ""}${state.oeeBonus.toFixed(1)}%</strong>.
+        </p>
+      </div>
+      <button class="btn btn-primary" onclick="closeMeetingRoom()">MES Masaüstüne Dön</button>
+    `;
+    return;
+  }
+
+  closeBtn.disabled = true;
+  closeBtn.textContent = `Gündemi Tamamla (${state.meetingStep}/3)`;
+
+  const item = MEETING_AGENDA[state.meetingStep];
+  host.innerHTML = `
+    <div style="padding:14px;border-radius:10px;background:var(--bg-950);border:1px solid var(--line);">
+      <div style="font-size:12px;color:var(--accent-teal);font-weight:700;">${item.speaker} · ${sector.supervisor}</div>
+      <p style="margin-top:8px;font-size:14px;line-height:1.55;">"${item.question}"</p>
+    </div>
+    <div class="choice-list">
+      ${item.options.map((opt, idx) => `
+        <button class="choice-btn" onclick="pickMeetingChoice(${idx})">${opt.label}</button>
+      `).join("")}
+    </div>
+  `;
+}
+
+window.pickMeetingChoice = function (idx) {
+  const item = MEETING_AGENDA[state.meetingStep];
+  const chosen = item && item.options[idx];
+  if (chosen) {
+    state.oeeBonus = Math.min(4.0, state.oeeBonus + 0.4);
+    addEventLog("OK", `Zorunlu Toplantı (${state.meetingStep + 1}/3): ${chosen.label}`);
+  }
+  state.meetingStep += 1;
+  if (state.meetingStep >= MEETING_AGENDA.length) {
+    state.meetingDoneToday = true;
+  }
+  renderMeetingContent();
+};
+
+function closeMeetingRoom() {
+  if (!state.meetingDoneToday && state.meetingStep < MEETING_AGENDA.length) return;
+  document.getElementById("meeting-overlay").classList.remove("active");
+}
+
+/* ==================== SHIFT SUMMARY & SAVE ==================== */
+function finishShift() {
+  clearMiniGameLoop();
+  if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+  setSpeed(0);
+
+  const sector = getCurrentSector();
+  const avgOee = getAverageOee();
+  const scrapPct = state.totalProduced > 0 ? ((state.totalScrap / state.totalProduced) * 100).toFixed(2) : "0.00";
+  const titleRank = "Vardiya MES Operatörü";
+
+  saveCareerToStorage(true);
+
+  document.getElementById("shift-modal-title").textContent = `Gün ${state.day} Vardiya Devir Teslim Raporu`;
+  document.getElementById("shift-modal-body").innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+      <div class="mes-kpi-card"><div class="mes-kpi-label">Operatör</div><div style="font-weight:700;margin-top:4px;">${state.operatorName}</div></div>
+      <div class="mes-kpi-card"><div class="mes-kpi-label">Vardiya Değerlendirmesi</div><div style="font-weight:700;margin-top:4px;color:var(--accent-teal);">${titleRank}</div></div>
+      <div class="mes-kpi-card"><div class="mes-kpi-label">Ortalama OEE</div><div class="mes-kpi-val mono">%${avgOee.toFixed(1)}</div></div>
+      <div class="mes-kpi-card"><div class="mes-kpi-label">Üretim / Fire / Enerji</div><div class="mes-kpi-val mono" style="font-size:14px;">${state.totalProduced} ${sector.unit} · ${state.totalScrap} fire (%${scrapPct}) · ${state.totalKwh.toFixed(1)} kWh</div></div>
+    </div>
+    <p class="text-muted">İlerlemeniz kaydedildi. Gün ${state.day + 1} vardiyasına geçebilirsiniz.</p>
+    <div style="display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap;">
+      <button class="btn" onclick="returnToMenuFromShift()">Ana Menüye Dön</button>
+      <button class="btn btn-primary" onclick="startNextDayShift()">Gün ${state.day + 1} Vardiyasına Geç</button>
+    </div>
+  `;
+  document.getElementById("shift-modal").classList.add("open");
+}
+
+window.returnToMenuFromShift = function () {
+  document.getElementById("shift-modal").classList.remove("open");
+  document.getElementById("sim-screen").classList.remove("active");
+  document.getElementById("menu-screen").classList.add("active");
+  initMenu();
+};
+
+window.startNextDayShift = function () {
+  document.getElementById("shift-modal").classList.remove("open");
+  state.day += 1;
+  startShift(state.sectorId);
+};
+
+/* ==================== KAIZEN FORM & kaizen.xlsx GENERATOR ==================== */
+function loadKaizenList() {
+  try { return JSON.parse(localStorage.getItem(KAIZEN_KEY) || "[]"); }
+  catch { return []; }
+}
+
+function renderKaizenSavedList() {
+  const list = loadKaizenList();
+  const box = document.getElementById("kaizen-saved-list");
+  if (!list.length) {
+    box.innerHTML = `<div class="text-muted">Henüz kaydedilmiş Kaizen önerisi bulunmuyor.</div>`;
+    return;
+  }
+  box.innerHTML = `
+    <div style="font-size:12px;font-weight:700;margin-bottom:8px;">Kaydedilen Kaizen Önerileri (${list.length})</div>
+    ${list.slice(0, 5).map(item => `
+      <div class="kaizen-item-card" style="padding:8px 10px;border-radius:7px;margin-bottom:6px;font-size:12px;">
+        <strong>${item.title}</strong> <span class="text-muted">(${item.date})</span>
+        <div class="text-muted">${item.proposal}</div>
+      </div>
+    `).join("")}
+  `;
+}
+
+function openKaizenModal() {
+  renderKaizenSavedList();
+  document.getElementById("kaizen-modal").classList.add("open");
+}
+
+function closeKaizenModal() {
+  document.getElementById("kaizen-modal").classList.remove("open");
+}
+
+function escapeXml(str) {
+  return String(str || "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
+}
+
+function colName(index) {
+  let s = "";
+  let n = index;
+  while (n >= 0) {
+    s = String.fromCharCode((n % 26) + 65) + s;
+    n = Math.floor(n / 26) - 1;
+  }
+  return s;
+}
+
+function crc32(bytes) {
+  let c = -1;
+  for (let i = 0; i < bytes.length; i++) {
+    c = (c >>> 8) ^ CRC_TABLE[(c ^ bytes[i]) & 0xff];
+  }
+  return (c ^ -1) >>> 0;
+}
+
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) {
+    let c = n;
+    for (let k = 0; k < 8; k++) {
+      c = (c & 1) ? (0xedb88320 ^ (c >>> 1)) : (c >>> 1);
+    }
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+
+function buildStoredZip(files) {
+  const enc = new TextEncoder();
+  const localParts = [];
+  const centralParts = [];
+  let offset = 0;
+
+  files.forEach(file => {
+    const nameBytes = enc.encode(file.name);
+    const dataBytes = enc.encode(file.content);
+    const checksum = crc32(dataBytes);
+
+    const localHeader = new Uint8Array(30 + nameBytes.length);
+    const lv = new DataView(localHeader.buffer);
+    lv.setUint32(0, 0x04034b50, true);
+    lv.setUint16(4, 20, true);
+    lv.setUint16(6, 0x0800, true);
+    lv.setUint16(8, 0, true);
+    lv.setUint16(10, 0, true);
+    lv.setUint16(12, 0, true);
+    lv.setUint32(14, checksum, true);
+    lv.setUint32(18, dataBytes.length, true);
+    lv.setUint32(22, dataBytes.length, true);
+    lv.setUint16(26, nameBytes.length, true);
+    lv.setUint16(28, 0, true);
+    localHeader.set(nameBytes, 30);
+
+    localParts.push(localHeader, dataBytes);
+
+    const centralHeader = new Uint8Array(46 + nameBytes.length);
+    const cv = new DataView(centralHeader.buffer);
+    cv.setUint32(0, 0x02014b50, true);
+    cv.setUint16(4, 20, true);
+    cv.setUint16(6, 20, true);
+    cv.setUint16(8, 0x0800, true);
+    cv.setUint16(10, 0, true);
+    cv.setUint16(12, 0, true);
+    cv.setUint16(14, 0, true);
+    cv.setUint32(16, checksum, true);
+    cv.setUint32(20, dataBytes.length, true);
+    cv.setUint32(24, dataBytes.length, true);
+    cv.setUint16(28, nameBytes.length, true);
+    cv.setUint16(30, 0, true);
+    cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true);
+    cv.setUint16(36, 0, true);
+    cv.setUint32(38, 0, true);
+    cv.setUint32(42, offset, true);
+    centralHeader.set(nameBytes, 46);
+
+    centralParts.push(centralHeader);
+    offset += localHeader.length + dataBytes.length;
+  });
+
+  const centralSize = centralParts.reduce((s, p) => s + p.length, 0);
+  const eocd = new Uint8Array(22);
+  const ev = new DataView(eocd.buffer);
+  ev.setUint32(0, 0x06054b50, true);
+  ev.setUint16(4, 0, true);
+  ev.setUint16(6, 0, true);
+  ev.setUint16(8, files.length, true);
+  ev.setUint16(10, files.length, true);
+  ev.setUint32(12, centralSize, true);
+  ev.setUint32(16, offset, true);
+  ev.setUint16(20, 0, true);
+
+  return new Blob([...localParts, ...centralParts, eocd], {
+    type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  });
+}
+
+function buildKaizenXlsxBlob(rows) {
+  const sheetRowsXml = rows.map((r, rIdx) => {
+    const cellsXml = r.map((val, cIdx) => {
+      const ref = `${colName(cIdx)}${rIdx + 1}`;
+      return `<c r="${ref}" t="inlineStr"><is><t>${escapeXml(val)}</t></is></c>`;
+    }).join("");
+    return `<row r="${rIdx + 1}">${cellsXml}</row>`;
+  }).join("");
+
+  const sheetXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+  <sheetData>${sheetRowsXml}</sheetData>
+</worksheet>`;
+
+  const workbookXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+  <sheets>
+    <sheet name="Kaizen" sheetId="1" r:id="rId1"/>
+  </sheets>
+</workbook>`;
+
+  const relsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+</Relationships>`;
+
+  const rootRelsXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>`;
+
+  const contentTypesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/content-types">
+  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+  <Default Extension="xml" ContentType="application/xml"/>
+  <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+  <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-package.worksheet+xml"/>
+</Types>`;
+
+  return buildStoredZip([
+    { name: "[Content_Types].xml", content: contentTypesXml },
+    { name: "_rels/.rels", content: rootRelsXml },
+    { name: "xl/workbook.xml", content: workbookXml },
+    { name: "xl/_rels/workbook.xml.rels", content: relsXml },
+    { name: "xl/worksheets/sheet1.xml", content: sheetXml }
+  ]);
+}
+
+function saveAndOpenKaizenXlsx() {
+  const title = document.getElementById("kz-title").value.trim() || "Genel Simülasyon İyileştirme Önerisi";
+  const current = document.getElementById("kz-current").value.trim();
+  const proposal = document.getElementById("kz-proposal").value.trim();
+  const impact = document.getElementById("kz-impact").value.trim();
+  if (!proposal) { document.getElementById("kz-proposal").focus(); return; }
+
+  const record = {
+    date: new Date().toLocaleDateString("tr-TR"),
+    operator: state.operatorName || "MES Operatörü",
+    title, current, proposal, impact
+  };
+
+  const existing = loadKaizenList();
+  existing.unshift(record);
+  localStorage.setItem(KAIZEN_KEY, JSON.stringify(existing));
+
+  const tableRows = [
+    ["Tarih", "Operatör", "Başlık", "Mevcut Durum", "Önerilen İyileştirme", "Beklenen Etki"],
+    ...existing.map(item => [
+      item.date,
+      item.operator,
+      item.title,
+      item.current || "-",
+      item.proposal,
+      item.impact || "-"
+    ])
+  ];
+
+  const blob = buildKaizenXlsxBlob(tableRows);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "kaizen.xlsx";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  window.open(url, "_blank", "noopener,noreferrer");
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+
+  document.getElementById("kz-title").value = "";
+  document.getElementById("kz-current").value = "";
+  document.getElementById("kz-proposal").value = "";
+  document.getElementById("kz-impact").value = "";
+  renderKaizenSavedList();
+  refreshOperatorCard();
+}
+
+/* ==================== EVENT BINDINGS ==================== */
+
+document.getElementById("input-op-name").addEventListener("input", e => { state.operatorName = e.target.value.replace(/[<>&"]/g, "").trim(); });
+document.getElementById("btn-start-shift").addEventListener("click", () => startShift());
+document.getElementById("btn-continue-career").addEventListener("click", () => {
+  const saved = loadSavedCareer();
+  if (saved) {
+    state.day = saved.day || 1;
+    state.operatorName = saved.operatorName || "";
+    state.gender = saved.gender || "male";
+    state.sectorId = saved.sectorId || "icecek";
+    state.completed8DList = saved.completed8DList || [];
+
+    startShift(state.sectorId);
+  }
+});
+document.getElementById("btn-reset-save").addEventListener("click", () => {
+  localStorage.removeItem(SAVE_KEY);
+  state = getDefaultState();
+  document.getElementById("input-op-name").value = "";
+
+  initMenu();
+});
+
+document.getElementById("btn-open-kaizen").addEventListener("click", openKaizenModal);
+document.getElementById("btn-close-kaizen").addEventListener("click", closeKaizenModal);
+document.getElementById("btn-save-kaizen").addEventListener("click", saveAndOpenKaizenXlsx);
+
+document.getElementById("btn-back-menu").addEventListener("click", () => {
+  clearMiniGameLoop();
+  if (clockInterval) { clearInterval(clockInterval); clockInterval = null; }
+  document.getElementById("sim-screen").classList.remove("active");
+  document.getElementById("menu-screen").classList.add("active");
+  initMenu();
+});
+
+document.getElementById("btn-end-day-early").addEventListener("click", finishShift);
+document.getElementById("btn-close-shift").addEventListener("click", () => { document.getElementById("shift-modal").classList.remove("open"); });
+
+document.querySelectorAll(".speed-btn").forEach(btn => { btn.addEventListener("click", () => setSpeed(Number(btn.dataset.speed))); });
+
+document.querySelectorAll(".mes-tab-btn").forEach(btn => {
+  btn.addEventListener("click", () => { currentLaptopTab = btn.dataset.tab; renderLaptopContent(); });
+});
+
+window.addEventListener("keydown", e => {
+  if (e.key === "Escape") {
+    if (document.getElementById("kaizen-modal").classList.contains("open")) closeKaizenModal();
+    else if (document.getElementById("eightd-modal").classList.contains("open")) document.getElementById("eightd-modal").classList.remove("open");
+    else if (document.getElementById("meeting-overlay").classList.contains("active")) closeMeetingRoom();
+    else if (document.getElementById("scene-floor").classList.contains("active")) switchScene("laptop");
+  }
+});
+
+document.getElementById("btn-back-desk-floor").addEventListener("click", () => { clearMiniGameLoop(); switchScene("laptop"); });
+document.getElementById("btn-close-meeting").addEventListener("click", closeMeetingRoom);
+document.getElementById("btn-close-8d").addEventListener("click", () => { document.getElementById("eightd-modal").classList.remove("open"); });
+
+document.getElementById("radio-toggle-btn").addEventListener("click", () => {
+  if (radioOpen) closeRadioDrawer();
+  else { openRadioDrawer(); renderRadioDrawer(); }
+});
+document.getElementById("btn-close-radio").addEventListener("click", closeRadioDrawer);
+
+initMenu();
+</script>
+</body>
+</html>
